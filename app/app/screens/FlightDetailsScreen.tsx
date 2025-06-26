@@ -3,7 +3,7 @@
 import { useTheme } from "@/context/ThemeContext"
 import { Ionicons } from "@expo/vector-icons"
 import { StatusBar } from "expo-status-bar"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import Button from "../../components/Button"
@@ -12,25 +12,42 @@ import Input from "../../components/Input"
 import { COLORS, FONTS, SIZES } from "../../constants/theme"
 
 const FlightDetailsScreen = ({ navigation, route }) => {
-  const { flight } = route.params || {}
+  // const { flight } = route.params || {}
   const [selectedTab, setSelectedTab] = useState("details")
-  const [passengerDetails, setPassengerDetails] = useState({
-    firstName: "",
-    lastName: "",
-    dob: "",
-    gender: "Male",
-    nationality: "",
-    email: "",
-    phone: "",
-  })
+  const [passengerDetails, setPassengerDetails] = useState(1)
   const [selectedMeal, setSelectedMeal] = useState("Regular")
   const [selectedBaggage, setSelectedBaggage] = useState("20kg")
 
-  const handleProceedToPayment = () => {
-    navigation.navigate("Payment", { flight, passengerDetails })
-  }
 
   const { theme } = useTheme()
+    const { flight, searchParams } = route.params
+  const {
+    airline,
+    logo,
+    flightNumber,
+    origin,
+    destination,
+    departureTime,
+    arrivalTime,
+    duration,
+    stops,
+    price,
+    class: flightClass,
+  } = flight
+  
+  const [totalPrice, setTotalPrice] = useState(0)
+
+  const passengers = Number(searchParams.passengers) || 1
+
+   useEffect(() => {
+    setTotalPrice(price * passengers)
+  }, [price, passengers])
+
+
+  const handleProceedToPayment = () => { 
+    navigation.navigate("Payment", { flight, passengerDetails , totalPrice,})
+  }
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -44,42 +61,59 @@ const FlightDetailsScreen = ({ navigation, route }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Card style={[styles.flightSummaryCard, { backgroundColor: theme.lightGray }]}>
-          <View style={styles.airlineContainer}>
-            <Image source={{ uri: flight.logo }} style={styles.airlineLogo} />
-            <Text style={[styles.airlineName,{ color: theme.black}]}>{flight.airline}</Text>
-            <View style={[styles.flightNumberContainer, { backgroundColor: theme.white }]}>
-              <Text style={styles.flightNumberText}>FL 2356</Text>
-            </View>
-          </View>
+<Card style={[styles.flightSummaryCard, { backgroundColor: theme.lightGray }]}>
+  <View style={styles.airlineContainer}>
+    <Image source={{ uri: flight.logo }} style={styles.airlineLogo} />
+    <Text style={[styles.airlineName, { color: theme.black }]}>{flight.airline}</Text>
+    <View style={[styles.flightNumberContainer, { backgroundColor: theme.white }]}>
+      <Text style={styles.flightNumberText}>FL 2356</Text>
+    </View>
+  </View>
 
-          <View style={styles.flightPathContainer}>
-            <View style={styles.locationTimeContainer}>
-              <Text style={[styles.timeText, {color:theme.black}]}>{flight.departureTime}</Text>
-              <Text style={[styles.locationText, {color:theme.black}]}>{flight.origin}</Text>
-            </View>
+  <View style={styles.flightPathContainer}>
+    <View style={styles.locationTimeContainer}>
+      <Text style={[styles.timeText, { color: theme.black }]}>
+        {new Date(flight.departureTime).toLocaleString(undefined, {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </Text>
+      <Text style={[styles.locationText, { color: theme.black }]}>{flight.origin}</Text>
+    </View>
 
-            <View style={styles.durationContainer}>
-              <Text style={[styles.durationText, {color:theme.black}]}>{flight.duration}</Text>
-              <View style={styles.flightPath}>
-                <View style={styles.dot} />
-                <View style={styles.line} />
-                {flight.stops > 0 && <View style={styles.stopDot} />}
-                <View style={styles.dot} />
-              </View>
-              {flight.stops > 0 ? (
-                <Text style={styles.stopsText}>{flight.stops} stop</Text>
-              ) : (
-                <Text style={styles.nonstopText}>Nonstop</Text>
-              )}
-            </View>
+    <View style={styles.durationContainer}>
+      <Text style={[styles.durationText, { color: theme.black }]}>{flight.duration}</Text>
+      <View style={styles.flightPath}>
+        <View style={styles.dot} />
+        <View style={styles.line} />
+        {flight.stops > 0 && <View style={styles.stopDot} />}
+        <View style={styles.dot} />
+      </View>
+      {flight.stops > 0 ? (
+        <Text style={styles.stopsText}>{flight.stops} stop</Text>
+      ) : (
+        <Text style={styles.nonstopText}>Non stop</Text>
+      )}
+    </View>
 
-            <View style={styles.locationTimeContainer}>
-              <Text style={[styles.timeText, {color:theme.black}]}>{flight.arrivalTime}</Text>
-              <Text style={[styles.locationText, {color:theme.black}]}>{flight.destination}</Text>
-            </View>
-          </View>
-        </Card>
+    <View style={styles.locationTimeContainer}>
+      <Text style={[styles.timeText, { color: theme.black }]}>
+        {new Date(flight.arrivalTime).toLocaleString(undefined, {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </Text>
+      <Text style={[styles.locationText, { color: theme.black }]}>{flight.destination}</Text>
+    </View>
+  </View>
+</Card>
+
 
         <View style={styles.tabContainer}>
           <TouchableOpacity
@@ -298,7 +332,7 @@ const FlightDetailsScreen = ({ navigation, route }) => {
           <Text style={[styles.sectionTitle, {color:theme.black}]}>Price Summary</Text>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Base Fare</Text>
-            <Text style={[styles.priceValue,{color:theme.black}]}>${flight.price}</Text>
+            <Text style={[styles.priceValue,{color:theme.black}]}>${totalPrice}</Text>
           </View>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Taxes & Fees</Text>
@@ -320,7 +354,7 @@ const FlightDetailsScreen = ({ navigation, route }) => {
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, {color:theme.black}]}>Total</Text>
             <Text style={styles.totalValue}>
-              ${flight.price + 45 + (selectedBaggage === "25kg" ? 30 : selectedBaggage === "30kg" ? 50 : 0)}
+              ${totalPrice + 45 + (selectedBaggage === "25kg" ? 30 : selectedBaggage === "30kg" ? 50 : 0)}
             </Text>
           </View>
         </Card>

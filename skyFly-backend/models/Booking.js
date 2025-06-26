@@ -1,27 +1,27 @@
 const mongoose = require("mongoose")
 
-const passengerSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Passenger name is required"],
-    trim: true,
-  },
-  age: {
-    type: Number,
-    required: [true, "Passenger age is required"],
-    min: [0, "Age must be positive"],
-    max: [120, "Age must be realistic"],
-  },
-  gender: {
-    type: String,
-    required: [true, "Passenger gender is required"],
-    enum: ["Male", "Female", "Other"],
-  },
-  seatNumber: {
-    type: String,
-    trim: true,
-  },
-})
+// const passengerSchema = new mongoose.Schema({
+//   name: {
+//     type: String,
+//     required: [true, "Passenger name is required"],
+//     trim: true,
+//   },
+//   age: {
+//     type: Number,
+//     required: [true, "Passenger age is required"],
+//     min: [0, "Age must be positive"],
+//     max: [120, "Age must be realistic"],
+//   },
+//   gender: {
+//     type: String,
+//     required: [true, "Passenger gender is required"],
+//     enum: ["Male", "Female", "Other"],
+//   },
+//   seatNumber: {
+//     type: String,
+//     trim: true,
+//   },
+// })
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -36,12 +36,12 @@ const bookingSchema = new mongoose.Schema(
       required: [true, "Flight ID is required"],
     },
     passengers: {
-      type: [passengerSchema],
+      type: Number,
       required: [true, "At least one passenger is required"],
-      validate: {
-        validator: (passengers) => passengers && passengers.length > 0,
-        message: "At least one passenger is required",
-      },
+      // validate: {
+      //   validator: (passengers) => passengers && passengers.length > 0,
+      //   message: "At least one passenger is required",
+      // },
     },
     totalAmount: {
       type: Number,

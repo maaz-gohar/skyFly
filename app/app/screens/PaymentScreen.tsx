@@ -12,7 +12,7 @@ import Input from "../../components/Input"
 import { COLORS, FONTS, SHADOWS, SIZES } from "../../constants/theme"
 
 const PaymentScreen = ({ navigation, route }) => {
-  const { flight } = route.params || {}
+  const { flight , totalPrice} = route.params || {}
   const [cardName, setCardName] = useState("")
   const [cardNumber, setCardNumber] = useState("")
   const [expiryDate, setExpiryDate] = useState("")
@@ -124,7 +124,7 @@ const PaymentScreen = ({ navigation, route }) => {
                 }}
                 keyboardType="numeric"
                 maxLength={5}
-                style={{ flex: 1, marginRight: 12 }}
+                style={{ flex: 1, marginRight: 12 , color: COLORS.gray}}
               />
               <Input
                 label="CVV"
@@ -133,7 +133,7 @@ const PaymentScreen = ({ navigation, route }) => {
                 onChangeText={setCvv}
                 keyboardType="numeric"
                 maxLength={3}
-                style={{ flex: 1 }}
+                style={{ flex: 1 , color: COLORS.gray}}
               />
             </View>
           </Card>
@@ -167,7 +167,7 @@ const PaymentScreen = ({ navigation, route }) => {
           <Text style={[styles.sectionTitle, {color: theme.black}]}>Price Summary</Text>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Base Fare</Text>
-            <Text style={[styles.priceValue , {color: theme.black}]}>${flight.price}</Text>
+            <Text style={[styles.priceValue , {color: theme.black}]}>${totalPrice}</Text>
           </View>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Taxes & Fees</Text>
@@ -176,12 +176,12 @@ const PaymentScreen = ({ navigation, route }) => {
           <View style={styles.divider} />
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, {color: theme.black}]}>Total</Text>
-            <Text style={styles.totalValue}>${flight.price + 45}</Text>
+            <Text style={styles.totalValue}>${Number(totalPrice) + 45}</Text>
           </View>
         </Card>
 
         <Button
-          title={`Pay $${flight.price + 45}`}
+          title={`Pay $${totalPrice + 45}`}
           onPress={handlePayment}
           gradient
           loading={loading}

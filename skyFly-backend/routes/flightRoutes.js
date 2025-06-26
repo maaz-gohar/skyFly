@@ -4,6 +4,7 @@ const flightController = require("../controllers/flightController")
 const { protect, authorize } = require("../middlewares/authMiddleware")
 
 // Public routes
+router.get("/search", flightController.getFilteredFlights)
 router.get("/", flightController.getFlights)
 router.get("/:id", flightController.getFlight)
 

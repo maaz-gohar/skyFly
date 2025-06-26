@@ -3,14 +3,20 @@ import type { Booking } from "../types"
 import { apiRequest } from "./config"
 
 // Get user bookings
-export const getUserBookings = async (userId:string): Promise<Booking[]> => {
-  const storedId = await AsyncStorage.getItem("userId")
-  const token = await AsyncStorage.getItem("token")
-  console.log("🔑 Stored user token:", token ? "User found" : "No user")
+export const getUserBookings = async (): Promise<Booking[]> => {
   try {
-    console.log("🔍 Fetching user bookings...")
-    const response = await apiRequest(`/users/${storedId}/bookings`, "GET", null, true)
+    const storedId = await AsyncStorage.getItem("userId")
+    const token = await AsyncStorage.getItem("token")
+    console.log("🔑 Stored user token:", token ? "User found" : "No user")
 
+    if (!storedId || !token) {
+      console.warn("⚠️ Missing user ID or token in storage.")
+      return []
+    }
+
+    console.log("🔍 Fetching user bookings...")
+
+    const response = await apiRequest(`/users/${storedId}/bookings`, "GET", null, true)
     console.log("📦 Raw bookings response:", response)
 
     if (!response.data) {
@@ -18,13 +24,10 @@ export const getUserBookings = async (userId:string): Promise<Booking[]> => {
       return []
     }
 
-    // Handle both array and object responses
     const bookingsData = Array.isArray(response.data) ? response.data : [response.data]
-
     console.log("📋 Processing bookings data:", bookingsData)
 
-    // Transform backend data to frontend format
-    const transformedBookings = bookingsData.map((booking: any) => {
+    const transformedBookings: Booking[] = bookingsData.map((booking: any) => {
       console.log("🔄 Transforming booking:", booking)
 
       return {
@@ -51,7 +54,7 @@ export const getUserBookings = async (userId:string): Promise<Booking[]> => {
           totalSeats: booking.flightId?.totalSeats || booking.flight?.totalSeats || 180,
           class: booking.flightId?.class || booking.flight?.class || "Economy",
         },
-        passengers: booking.passengers || [],
+        passengers: Number(booking.passengers) || 1,
         totalAmount: booking.totalAmount || 0,
         status: booking.status || "Pending",
         bookingDate: booking.bookingDate || booking.createdAt || new Date().toISOString(),
@@ -70,14 +73,16 @@ export const getUserBookings = async (userId:string): Promise<Booking[]> => {
   }
 }
 
+
 // Create new booking
 export const createBooking = async (bookingData: {
   flightId: string
-  passengers: {
-    name: string
-    age: number
-    gender: "Male" | "Female" | "Other"
-  }[]
+  // passengers: {
+  //   name: string
+  //   age: number
+  //   gender: "Male" | "Female" | "Other"
+  // }[]
+  passengers: number
   contactEmail: string
   contactPhone: string
 }) => {

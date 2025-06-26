@@ -3,34 +3,35 @@ const Flight = require("../models/Flight")
 
 // Create new booking
 exports.createBooking = async (bookingData) => {
-  const { flightId, passengers } = bookingData
+  const { flightId, passengers } = bookingData;
 
   // Check if flight exists and has enough seats
-  const flight = await Flight.findById(flightId)
+  const flight = await Flight.findById(flightId);
   if (!flight) {
-    throw new Error("Flight not found")
+    throw new Error("Flight not found");
   }
 
-  if (flight.availableSeats < passengers.length) {
-    throw new Error("Not enough seats available")
+  if (flight.availableSeats < passengers) {
+    throw new Error("Not enough seats available");
   }
 
   // Calculate total amount
-  const totalAmount = flight.price * passengers.length
+  const totalAmount = flight.price * passengers;
 
   // Create booking
   const booking = await Booking.create({
     ...bookingData,
     totalAmount,
-  })
+  });
 
   // Update available seats
   await Flight.findByIdAndUpdate(flightId, {
-    $inc: { availableSeats: -passengers.length },
-  })
+    $inc: { availableSeats: -passengers },
+  });
 
-  return booking
-}
+  return booking;
+};
+
 
 // Get booking by ID
 exports.getBookingById = async (id) => {

@@ -2,9 +2,16 @@
 
 import { Ionicons } from "@expo/vector-icons"
 import { StatusBar } from "expo-status-bar"
-import type React from "react"
-import { useEffect, useState } from "react"
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import React, { useCallback, useEffect, useState } from "react"
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { getFlights, searchFlights } from "../../api/flights"
 import Card from "../../components/Card"
@@ -54,53 +61,45 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
     try {
       setLoading(true)
       setError("")
-      console.log("Fetching flights with params:", searchParams)
 
       let results: Flight[] = []
 
-      // Try search first, then fallback to get all flights
       try {
         results = await searchFlights(searchParams)
-        console.log("Search results:", results)
-      } catch (searchError) {
-        console.log("Search failed, trying get all flights:", searchError)
+      } catch {
         results = await getFlights()
-        console.log("Get all flights results:", results)
       }
 
       if (!results || results.length === 0) {
-        // Create some mock data for testing if no real data
         results = createMockFlights()
-        console.log("Using mock data:", results)
       }
 
       setOriginalFlights(results)
-      setFlights(results)
-    } catch (error) {
-      console.error("All fetch methods failed:", error)
-      const errorMessage = error instanceof Error ? error.message : "Failed to fetch flights"
-      setError(errorMessage)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to fetch flights"
+      setError(msg)
 
-      // Show mock data even on error for testing
       const mockFlights = createMockFlights()
       setOriginalFlights(mockFlights)
-      setFlights(mockFlights)
 
-      Alert.alert("Connection Error", `${errorMessage}\n\nShowing sample data for testing.`, [{ text: "OK" }])
+      Alert.alert("Connection Error", `${msg}\n\nShowing sample data for testing.`, [{ text: "OK" }])
     } finally {
       setLoading(false)
     }
   }
 
   const createMockFlights = (): Flight[] => {
+    const origin = searchParams.from || "NYC"
+    const destination = searchParams.to || "LAX"
+
     return [
       {
         id: "1",
         flightNumber: "AA123",
         airline: "American Airlines",
         logo: "https://via.placeholder.com/40x40?text=AA",
-        origin: searchParams.from || "NYC",
-        destination: searchParams.to || "LAX",
+        origin,
+        destination,
         departureTime: new Date().toISOString(),
         arrivalTime: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString(),
         duration: 300,
@@ -114,8 +113,8 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
         flightNumber: "DL456",
         airline: "Delta Airlines",
         logo: "https://via.placeholder.com/40x40?text=DL",
-        origin: searchParams.from || "NYC",
-        destination: searchParams.to || "LAX",
+        origin,
+        destination,
         departureTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
         arrivalTime: new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString(),
         duration: 300,
@@ -127,7 +126,7 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
     ]
   }
 
-  const sortFlights = () => {
+  const sortFlights = useCallback(() => {
     const sorted = [...originalFlights].sort((a, b) => {
       switch (sortBy) {
         case "price":
@@ -141,7 +140,7 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
       }
     })
     setFlights(sorted)
-  }
+  }, [sortBy, originalFlights])
 
   const handleFlightSelect = (flight: Flight) => {
     navigation.navigate("FlightDetails", { flight, searchParams })
@@ -199,7 +198,9 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
             <Text style={[styles.priceLabel, { color: theme.gray }]}>per person</Text>
           </View>
           <View style={styles.seatsContainer}>
-            <Text style={[styles.seatsAvailable, { color: theme.success }]}>{item.availableSeats} seats left</Text>
+            <Text style={[styles.seatsAvailable, { color: theme.success }]}>
+              {item.availableSeats} seats left
+            </Text>
           </View>
         </View>
       </Card>
@@ -210,6 +211,7 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar style={theme.background === COLORS.background ? "dark" : "light"} />
 
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={[styles.backButton, { backgroundColor: theme.lightGray }]}
@@ -227,7 +229,7 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
         </View>
       </View>
 
-      {/* Sort Options */}
+      {/* Sort Filters */}
       <View style={styles.filterContainer}>
         <View style={styles.sortContainer}>
           <Text style={[styles.filterLabel, { color: theme.gray }]}>Sort by:</Text>
@@ -236,18 +238,14 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
               key={option}
               style={[
                 styles.filterButton,
-                {
-                  backgroundColor: sortBy === option ? theme.primary : theme.lightGray,
-                },
+                { backgroundColor: sortBy === option ? theme.primary : theme.lightGray },
               ]}
               onPress={() => setSortBy(option as any)}
             >
               <Text
                 style={[
                   styles.filterButtonText,
-                  {
-                    color: sortBy === option ? theme.white : theme.gray,
-                  },
+                  { color: sortBy === option ? theme.white : theme.gray, fontWeight: "bold" },
                 ]}
               >
                 {option.charAt(0).toUpperCase() + option.slice(1)}
@@ -267,6 +265,7 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
         </View>
       )}
 
+      {/* Loading or Flights List */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.primary} />
@@ -291,6 +290,8 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
     </SafeAreaView>
   )
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -478,3 +479,4 @@ const styles = StyleSheet.create({
 })
 
 export default FlightResultsScreen
+

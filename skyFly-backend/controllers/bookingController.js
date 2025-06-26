@@ -9,12 +9,12 @@ const { validate } = require("../middlewares/validationMiddleware")
 exports.createBooking = [
   // Validation
   check("flightId", "Flight ID is required").isMongoId(),
-  check("passengers", "At least one passenger is required").isArray({ min: 1 }),
-  check("passengers.*.name", "Passenger name is required").notEmpty(),
-  check("passengers.*.age", "Passenger age must be a positive number").isInt({
-    min: 0,
-  }),
-  check("passengers.*.gender", "Passenger gender is required").isIn(["Male", "Female", "Other"]),
+  check("passengers", "At least one passenger is required").isInt({ min: 1 }),
+  // check("passengers.*.name", "Passenger name is required").notEmpty(),
+  // check("passengers.*.age", "Passenger age must be a positive number").isInt({
+  //   min: 0,
+  // }),
+  // check("passengers.*.gender", "Passenger gender is required").isIn(["Male", "Female", "Other"]),
   check("contactEmail", "Valid contact email is required").isEmail(),
   check("contactPhone", "Contact phone is required").notEmpty(),
   validate,

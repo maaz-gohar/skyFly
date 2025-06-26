@@ -3,10 +3,11 @@
 import type React from "react"
 
 import { Ionicons } from "@expo/vector-icons"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import DateTimePicker from "@react-native-community/datetimepicker"
 import { StatusBar } from "expo-status-bar"
 import { useEffect, useState } from "react"
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { getUserBookings } from "../../api/bookings"
 import { searchFlights } from "../../api/flights"
@@ -17,6 +18,7 @@ import { useAuth } from "../../context/AuthContext"
 import { useTheme } from "../../context/ThemeContext"
 import type { Booking, ScreenNavigationProp } from "../../types"
 
+
 interface HomeScreenProps {
   navigation: ScreenNavigationProp<"Home">
 }
@@ -25,6 +27,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { theme } = useTheme()
   const { user } = useAuth()
 
+const flightClasses = [
+  { label: 'Economy', value: 'Economy' },
+  { label: 'Business', value: 'Business' },
+  { label: 'First', value: 'First' },
+];
+
+
   // Search form state
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
@@ -32,7 +41,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [returnDate, setReturnDate] = useState<Date | null>(null)
   const [passengers, setPassengers] = useState(1)
   const [tripType, setTripType] = useState<"one-way" | "round-trip">("one-way")
-  const [flightClass, setFlightClass] = useState<"Economy" | "Business" | "First">("Economy")
+const [flightClass, setFlightClass] = useState<"Economy" | "Business" | "First">("Economy");
+const [dropdownVisible, setDropdownVisible] = useState(false);
   const [showDeparturePicker, setShowDeparturePicker] = useState(false)
   const [showReturnPicker, setShowReturnPicker] = useState(false)
 
@@ -59,7 +69,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const fetchRecentBookings = async () => {
     try {
       setBookingsLoading(true)
-      const bookings = await getUserBookings()
+      const userId = await AsyncStorage.getItem("userId")
+      const bookings = await getUserBookings(userId || "")
       setRecentBookings(bookings.slice(0, 3)) // Show only recent 3
     } catch (error) {
       console.error("Failed to fetch recent bookings:", error)
@@ -134,10 +145,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: booking.status === "Confirmed" ? theme.success + "20" : theme.warning + "20" },
+            { backgroundColor: booking.status === "Confirmed" ? theme.success + "20" : theme.secondary + "20" },
           ]}
         >
-          <Text style={[styles.statusText, { color: booking.status === "Confirmed" ? theme.success : theme.warning }]}>
+          <Text style={[styles.statusText, { color: booking.status === "Confirmed" ? theme.success : theme.secondary }]}>
             {booking.status}
           </Text>
         </View>
@@ -293,10 +304,41 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
             <View style={styles.classContainer}>
               <Text style={[styles.inputLabel, { color: theme.gray }]}>Class</Text>
-              <TouchableOpacity style={[styles.classSelector, { borderColor: theme.lightGray }]}>
-                <Text style={[styles.classText, { color: theme.black }]}>{flightClass}</Text>
-                <Ionicons name="chevron-down" size={16} color={theme.gray} />
-              </TouchableOpacity>
+              <View style={styles.classContainer}>
+  <Text style={[styles.inputLabel, { color: theme.gray }]}>Class</Text>
+
+  <TouchableOpacity
+    style={[styles.classSelector, { borderColor: theme.lightGray }]}
+    onPress={() => setDropdownVisible(true)}
+  >
+    <Text style={[styles.classText, { color: theme.black }]}>{flightClass}</Text>
+    <Ionicons name="chevron-down" size={16} color={theme.gray} />
+  </TouchableOpacity>
+
+  {/* Dropdown Modal */}
+  <Modal transparent visible={dropdownVisible} animationType="fade">
+    <TouchableOpacity
+      style={styles.modalOverlay}
+      onPress={() => setDropdownVisible(false)}
+      activeOpacity={1}
+    >
+      <View style={styles.dropdown}>
+        {["Economy", "Business", "First"].map((item) => (
+          <TouchableOpacity
+            key={item}
+            onPress={() => {
+              setFlightClass(item as typeof flightClass);
+              setDropdownVisible(false);
+            }}
+            style={styles.dropdownItem}
+          >
+            <Text style={{ color: theme.black }}>{item}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </TouchableOpacity>
+  </Modal>
+</View>
             </View>
           </View>
 
@@ -311,7 +353,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {/* Popular Destinations */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.black }]}>Popular Destinations</Text>
+          <Text style={[styles.sectionTitle, { color: theme.black , paddingHorizontal:25, marginBottom:20}]}>Popular Destinations</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.destinationsContainer}>
               {popularDestinations.map((destination, index) => (
@@ -541,6 +583,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: FONTS.semiBold,
     fontSize: SIZES.large,
+    // paddingHorizontal:25,
+    // paddingBottom: 20,
   },
   seeAllText: {
     fontFamily: FONTS.medium,
@@ -627,6 +671,7 @@ const styles = StyleSheet.create({
   loadingIndicator: {
     paddingVertical: 20,
   },
+  
 })
 
 export default HomeScreen

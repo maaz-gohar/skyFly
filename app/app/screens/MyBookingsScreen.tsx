@@ -199,7 +199,8 @@ const MyBookingsScreen: React.FC<MyBookingsScreenProps> = ({ navigation }) => {
         <View style={styles.detailItem}>
           <Ionicons name="people-outline" size={16} color={theme.gray} />
           <Text style={[styles.detailText, { color: theme.black }]}>
-            {item.passengers.length} passenger{item.passengers.length > 1 ? "s" : ""}
+            {item.passengers} passenger{item.passengers
+             > 1 ? "s" : ""}
           </Text>
         </View>
         <View style={styles.detailItem}>
@@ -215,6 +216,9 @@ const MyBookingsScreen: React.FC<MyBookingsScreenProps> = ({ navigation }) => {
             navigation.navigate("FlightDetails", {
               flight: item.flight,
               booking: item,
+              searchParams: {
+    passengers: item.passengers,
+  },
             })
           }
         >

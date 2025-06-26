@@ -108,12 +108,7 @@ export interface Booking {
   _id?: string
   userId: string
   flight: Flight
-  passengers: {
-    name: string
-    age: number
-    gender: "Male" | "Female" | "Other"
-    seatNumber?: string
-  }[]
+  passengers:number
   totalAmount: number
   status: "Pending" | "Confirmed" | "Cancelled" | "Completed"
   bookingDate: string
@@ -137,12 +132,7 @@ export interface AdminBooking {
     origin: string
     destination: string
   }
-  passengers: {
-    name: string
-    age: number
-    gender: "Male" | "Female" | "Other"
-    seatNumber?: string
-  }[]
+  passengers:number
   totalAmount: number
   status: "Pending" | "Confirmed" | "Cancelled" | "Completed"
   bookingDate: string

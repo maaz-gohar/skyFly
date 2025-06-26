@@ -2,6 +2,7 @@ const { check } = require("express-validator");
 const flightService = require("../services/flightService");
 const asyncHandler = require("../utils/asyncHandler");
 const { validate } = require("../middlewares/validationMiddleware");
+const Flight = require("../models/Flight") 
 
 // Validation helper
 const isCustomDateFormat = (value) => {
@@ -57,6 +58,41 @@ const getFlights = asyncHandler(async (req, res) => {
   });
 });
 
+const getFilteredFlights = async (req, res) => {
+  try {
+    const { origin, destination, departureDate, class: flightClass, passengers } = req.query;
+
+    const filter = {};
+
+    if (origin) filter.origin = { $regex: new RegExp(origin, "i") };
+    if (destination) filter.destination = { $regex: new RegExp(destination, "i") };
+
+    if (departureDate) {
+      // ✳️ Fix here: use ISO date comparison instead of regex on date string
+      const date = new Date(departureDate);
+      const nextDate = new Date(date);
+      nextDate.setDate(date.getDate() + 1); // 1 day range
+
+      filter.departureTime = {
+        $gte: date.toISOString(),
+        $lt: nextDate.toISOString(),
+      };
+    }
+
+    if (flightClass) filter.class = { $regex: new RegExp(flightClass, "i") };
+
+    if (passengers) filter.availableSeats = { $gte: parseInt(passengers) };
+
+    const flights = await Flight.find(filter);
+    res.status(200).json(flights);
+  } catch (error) {
+    console.error("❌ getFilteredFlights error:", error); // This will show actual issue in terminal
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+
+
 // ✅ Controller: Get single flight
 const getFlight = asyncHandler(async (req, res) => {
   const flight = await flightService.getFlightById(req.params.id);
@@ -68,6 +104,7 @@ const getFlight = asyncHandler(async (req, res) => {
 
 // ✅ Export all
 module.exports = {
+  getFilteredFlights,
   getFlights,
   getFlight,
   createFlight,

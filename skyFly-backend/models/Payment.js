@@ -13,7 +13,7 @@ const paymentSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["Credit Card", "Debit Card", "PayPal", "Bank Transfer"],
+      enum: ["Credit Card", "Debit Card", "PayPal", "Bank Transfer", " UPI"],
       required: [true, "Please add payment method"],
     },
     paymentStatus: {
