@@ -1,4 +1,5 @@
-const mongoose = require("mongoose")
+// payment.model.js
+const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema(
   {
@@ -13,7 +14,7 @@ const paymentSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["Credit Card", "Debit Card", "PayPal", "Bank Transfer", " UPI"],
+      enum: ["Credit Card", "Debit Card", "PayPal", "Bank Transfer", "UPI"],
       required: [true, "Please add payment method"],
     },
     paymentStatus: {
@@ -28,10 +29,14 @@ const paymentSchema = new mongoose.Schema(
     transactionId: {
       type: String,
     },
+    cardHolderName: String,
+    cardNumberLast4: String,
+    expiryDate: String,
+    upiEmail: String,
   },
   {
     timestamps: true,
-  },
-)
+  }
+);
 
-module.exports = mongoose.model("Payment", paymentSchema)
+module.exports = mongoose.model("Payment", paymentSchema);

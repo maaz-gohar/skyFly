@@ -114,6 +114,39 @@ const validatePaymentStatus = [
   validate,
 ];
 
+const validatePayment = [
+  body("bookingId")
+    .isMongoId().withMessage("Booking ID must be valid"),
+
+  body("amount")
+    .isFloat({ min: 0 }).withMessage("Amount must be a positive number"),
+
+  body("paymentMethod")
+    .isIn(["Credit Card", "UPI", "Debit Card", "PayPal", "Bank Transfer"])
+    .withMessage("Invalid payment method"),
+
+  // Conditional validations
+  body().custom((value) => {
+    const { paymentMethod } = value;
+
+    if (paymentMethod === "Credit Card") {
+      if (!value.cardHolderName || !value.cardHolderNumber || !value.expiryDate || !value.cvv) {
+        throw new Error("Credit Card payment requires cardHolderName, cardHolderNumber, expiryDate, and cvv");
+      }
+    }
+
+    if (paymentMethod === "UPI") {
+      if (!value.upiEmail) {
+        throw new Error("UPI payment requires upiEmail");
+      }
+    }
+
+    return true;
+  }),
+
+  validate,
+];
+
 module.exports = {
   validate,
   validateSignup,
@@ -122,4 +155,5 @@ module.exports = {
   validateFlight,
   validateBookingStatus,
   validatePaymentStatus,
+  validatePayment
 };

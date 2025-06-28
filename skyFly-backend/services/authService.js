@@ -3,7 +3,7 @@ const { generateToken } = require("../utils/jwtUtils")
 
 // Register user
 exports.registerUser = async (userData) => {
-  const { name, email, password, phone , role} = userData
+  const { name, email, password, phone , address , city , country, role} = userData
 
   // Check if user already exists
   const userExists = await User.findOne({ email })
@@ -17,6 +17,9 @@ exports.registerUser = async (userData) => {
     email,
     password,
     phone,
+    address,
+    city,
+    country,
     role: role || "user", // Default to 'user' if no role is provided
   })
 
@@ -26,6 +29,9 @@ exports.registerUser = async (userData) => {
     email: user.email,
     phone: user.phone,
     role: user.role,
+    address: user.address,
+    city: user.city,
+    country: user.country,
     token: generateToken(user._id),
   }
 }

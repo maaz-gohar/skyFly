@@ -3,36 +3,60 @@ const Booking = require("../models/Booking")
 
 // Process payment
 exports.processPayment = async (paymentData) => {
-  const { bookingId, amount, paymentMethod } = paymentData
+  const {
+    bookingId,
+    paymentMethod,
+    cardHolderName,
+    cardHolderNumber,
+    expiryDate,
+    cvv,
+    upiEmail,
+  } = paymentData;
 
-  // Check if booking exists
-  const booking = await Booking.findById(bookingId)
-  if (!booking) {
-    throw new Error("Booking not found")
+  const booking = await Booking.findById(bookingId);
+  if (!booking) throw new Error("Booking not found");
+
+  const serviceCharge = 45;
+  const finalAmount = booking.totalAmount + serviceCharge;
+
+  // Optional: if client sends `amount`, you can validate (if needed)
+  // if (paymentData.amount !== finalAmount)
+  //   throw new Error("Payment amount does not match expected total");
+
+  // Validate payment method fields
+  if (paymentMethod === "Credit Card") {
+    if (!cardHolderName || !cardHolderNumber || !expiryDate || !cvv)
+      throw new Error("Missing credit card details");
+    if (upiEmail)
+      throw new Error("UPI Email should not be provided with Credit Card");
+
+  } else if (paymentMethod === "UPI") {
+    if (!upiEmail)
+      throw new Error("UPI Email is required for UPI payment");
+    if (cardHolderName || cardHolderNumber || expiryDate || cvv)
+      throw new Error("Card details should not be provided with UPI payment");
   }
 
-  // Check if payment amount matches booking amount
-  if (amount !== booking.totalAmount) {
-    throw new Error("Payment amount does not match booking amount")
-  }
+  const transactionId = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
-  // Generate transaction ID
-  const transactionId = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`
-
-  // Create payment
   const payment = await Payment.create({
     bookingId,
-    amount,
+    amount: finalAmount, // ✅ includes ₹45
     paymentMethod,
     paymentStatus: "Completed",
     transactionId,
-  })
+    cardHolderName: paymentMethod === "Credit Card" ? cardHolderName : undefined,
+    cardNumberLast4: paymentMethod === "Credit Card" ? cardHolderNumber.slice(-4) : undefined,
+    expiryDate: paymentMethod === "Credit Card" ? expiryDate : undefined,
+    upiEmail: paymentMethod === "UPI" ? upiEmail : undefined,
+  });
 
-  // Update booking status
-  await Booking.findByIdAndUpdate(bookingId, { status: "Confirmed" })
+  await Booking.findByIdAndUpdate(bookingId, { status: "Confirmed" });
 
-  return payment
-}
+  return payment;
+};
+
+
 
 // Get payment by ID
 exports.getPaymentById = async (id) => {

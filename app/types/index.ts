@@ -234,12 +234,16 @@ export interface TravelPreferences {
 // Payment Method Types
 export interface PaymentMethod {
   id: string
-  type: "Credit Card" | "Debit Card" | "PayPal"
-  last4?: string
+  type: "Credit Card" | "Debit Card" | "PayPal" | "UPI"
+  last4?: string                     // last 4 digits of card
+  cardNumber?: string               // optional for submission, not for display
   expiryDate?: string
   cardholderName?: string
+  cvv?: string                      // optional (only for form, not for storage/display)
+  upiEmail?: string                // for UPI payments only
   isDefault: boolean
 }
+
 
 // Frequent Flyer Types
 export interface FrequentFlyerProgram {

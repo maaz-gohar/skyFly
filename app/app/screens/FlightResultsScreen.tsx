@@ -1,6 +1,7 @@
 "use client"
 
 import { Ionicons } from "@expo/vector-icons"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { StatusBar } from "expo-status-bar"
 import React, { useCallback, useEffect, useState } from "react"
 import {
@@ -65,7 +66,10 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
       let results: Flight[] = []
 
       try {
-        results = await searchFlights(searchParams)
+        results = await searchFlights({
+          ...searchParams,
+          class: searchParams.class as "Economy" | "Business" | "First"
+        })
       } catch {
         results = await getFlights()
       }
@@ -142,9 +146,15 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
     setFlights(sorted)
   }, [sortBy, originalFlights])
 
-  const handleFlightSelect = (flight: Flight) => {
+const handleFlightSelect = async (flight: Flight) => {
+  try {
+    await AsyncStorage.setItem("selectedFlightId", flight.id)
     navigation.navigate("FlightDetails", { flight, searchParams })
+    console.log("✅ Flight ID saved successfully:", flight.id)
+  } catch (err) {
+    console.error("❌ Error saving flight ID:", err)
   }
+}
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
@@ -290,8 +300,6 @@ const FlightResultsScreen: React.FC<FlightResultsScreenProps> = ({ navigation, r
     </SafeAreaView>
   )
 }
-
-
 
 const styles = StyleSheet.create({
   container: {

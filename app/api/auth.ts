@@ -5,6 +5,10 @@ export interface SignupData {
   email: string
   password: string
   phone: string
+  address: string
+  confirmPassword: string // Optional for signup forms, not stored in DB
+  city: string // Optional for signup forms, not stored in DB
+  country: string // Optional for signup forms, not stored in DB
 }
 
 export interface LoginData {
@@ -20,6 +24,9 @@ export interface AuthResponse {
     email: string
     phone: string
     role: string
+    address: string
+    city: string
+    country: string
     token: string
   }
 }

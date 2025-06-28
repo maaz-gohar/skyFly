@@ -155,14 +155,12 @@ const PersonalInfoScreen: React.FC<PersonalInfoScreenProps> = ({ navigation }) =
               placeholder="Enter city"
               value={city}
               onChangeText={setCity}
-              style={{ flex: 1, paddingHorizontal: 8 }}
             />
             <Input
               label="Country"
               placeholder="Enter country"
               value={country}
               onChangeText={setCountry}
-              style={{ flex: 1, paddingHorizontal: 8 }}
             />
           </View>
 

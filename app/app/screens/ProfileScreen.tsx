@@ -4,6 +4,7 @@ import type React from "react";
 
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import {
@@ -23,6 +24,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import type { ScreenNavigationProp } from "../../types";
 
+
 interface ProfileScreenProps {
   navigation: ScreenNavigationProp<"Profile">;
 }
@@ -31,6 +33,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const { user, logout } = useAuth();
   const { isDarkMode, toggleTheme, theme } = useTheme();
   const [storedName, setStoredName] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
 
 
   const menuItems = [
@@ -103,6 +107,54 @@ useEffect(() => {
   loadStoredName();
 }, []);
 
+const handleChangeProfileImage = () => {
+  Alert.alert("Update Profile Picture", "Choose an option", [
+    {
+      text: "Camera",
+      onPress: async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Permission denied", "Camera access is required.");
+          return;
+        }
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 1,
+        });
+        if (!result.canceled && result.assets.length > 0) {
+          setProfileImage(result.assets[0].uri);
+        }
+      },
+    },
+    {
+      text: "Gallery",
+      onPress: async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Permission denied", "Gallery access is required.");
+          return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 1,
+        });
+        if (!result.canceled && result.assets.length > 0) {
+          setProfileImage(result.assets[0].uri);
+        }
+      },
+    },
+    {
+      text: "Cancel",
+      style: "cancel",
+    },
+  ]);
+};
+
+
 // const getName = await AsyncStorage.getItem("user");
 
   return (
@@ -128,17 +180,12 @@ useEffect(() => {
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
             <Image
-              source={{ uri: "https://randomuser.me/api/portraits/men/32.jpg" }}
+              source={{uri: profileImage || "https://randomuser.me/api/portraits/men/32.jpg"}}
               style={styles.profileImage}
             />
             <TouchableOpacity
               style={styles.editImageButton}
-              onPress={() =>
-                Alert.alert(
-                  "Coming Soon",
-                  "This feature will be available soon!"
-                )
-              }
+              onPress={handleChangeProfileImage}
             >
               <Ionicons name="camera-outline" size={20} color={theme.white} />
             </TouchableOpacity>

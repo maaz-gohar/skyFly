@@ -1,13 +1,8 @@
+import { PaymentMethod } from "@/types"
 import { apiRequest } from "./config"
 
-export interface PaymentData {
-  bookingId: string
-  amount: number
-  paymentMethod: "Credit Card" | "Debit Card" | "PayPal" | "Bank Transfer"
-}
-
 // Process payment
-export const processPayment = async (paymentData: PaymentData) => {
+export const processPayment = async (paymentData: PaymentMethod) => {
   return await apiRequest("/payments", "POST", paymentData, true)
 }
 

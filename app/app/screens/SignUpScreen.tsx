@@ -24,13 +24,16 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [phone, setPhone] = useState("")
+  const [address, setAddress] = useState("")
+  const [city, setCity] = useState("")
+  const [country, setCountry] = useState("")
   const [loading, setLoading] = useState(false)
 
   const { signup } = useAuth()
   const { theme } = useTheme()
 
   const handleSignUp = async () => {
-    if (!name || !email || !password || !confirmPassword || !phone) {
+    if (!name || !email || !password || !confirmPassword || !phone || !address || !city || !country) {
       Alert.alert("Error", "Please fill in all fields")
       return
     }
@@ -42,7 +45,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
 
     setLoading(true)
     try {
-      await signup(name, email, password, phone)
+      await signup(name, email, password, phone, address, confirmPassword, city, country)
       navigation.navigate("Main")
     } catch (error) {
       Alert.alert("Sign Up Failed", error instanceof Error ? error.message : "Please check your information")
@@ -93,6 +96,30 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
             onChangeText={setPhone}
             icon="call-outline"
             keyboardType="phone-pad"
+          />
+
+          <Input
+            label="Address"
+            placeholder="Enter your Address"
+            value={address}
+            onChangeText={setAddress}
+            icon="call-outline"
+          />
+
+          <Input
+            label="City"
+            placeholder="Enter your City"
+            value={city}
+            onChangeText={setCity}
+            icon="call-outline"
+          />
+
+          <Input
+            label="Country"
+            placeholder="Enter your Country"
+            value={country}
+            onChangeText={setCountry}
+            icon="call-outline"
           />
 
           <Input

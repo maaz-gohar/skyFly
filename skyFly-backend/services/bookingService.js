@@ -50,23 +50,25 @@ exports.updateBookingStatus = async (id, status) => {
 
 // Cancel booking
 exports.cancelBooking = async (id) => {
-  const booking = await Booking.findById(id)
+  const booking = await Booking.findById(id);
   if (!booking) {
-    throw new Error("Booking not found")
+    throw new Error("Booking not found");
   }
 
   if (booking.status === "Cancelled") {
-    throw new Error("Booking is already cancelled")
+    throw new Error("Booking is already cancelled");
   }
 
   // Update booking status
-  booking.status = "Cancelled"
-  await booking.save()
+  booking.status = "Cancelled";
+  await booking.save();
 
-  // Restore available seats
+  // Ensure passengers is a number and restore available seats
+  const passengersToRestore = typeof booking.passengers === "number" ? booking.passengers : 0;
+
   await Flight.findByIdAndUpdate(booking.flightId, {
-    $inc: { availableSeats: booking.passengers.length },
-  })
+    $inc: { availableSeats: passengersToRestore },
+  });
 
-  return booking
-}
+  return booking;
+};

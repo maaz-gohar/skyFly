@@ -26,6 +26,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please add a phone number"],
     },
+    address: {
+      type: String,
+      required: [true, "Please add your Address"],
+    },
+    city: {
+      type: String,
+      required: [true, "Please add your city"],
+    },
+    country: {
+      type: String,
+      required: [true, "Please add your country"],
+    },
     role: {
       type: String,
       enum: ["user", "admin"],

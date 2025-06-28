@@ -12,7 +12,7 @@ export interface ApiResponse<T = any> {
 
 export const apiRequest = async <T = any>(
   endpoint: string,
-  method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" = "GET",
   data?: any,
   requireAuth = false,
 ): Promise<ApiResponse<T>> => {

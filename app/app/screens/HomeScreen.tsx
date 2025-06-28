@@ -1,53 +1,63 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { Ionicons } from "@expo/vector-icons"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import DateTimePicker from "@react-native-community/datetimepicker"
-import { StatusBar } from "expo-status-bar"
-import { useEffect, useState } from "react"
-import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { getUserBookings } from "../../api/bookings"
-import { searchFlights } from "../../api/flights"
-import Button from "../../components/Button"
-import Card from "../../components/Card"
-import { COLORS, FONTS, SIZES } from "../../constants/theme"
-import { useAuth } from "../../context/AuthContext"
-import { useTheme } from "../../context/ThemeContext"
-import type { Booking, ScreenNavigationProp } from "../../types"
-
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { getUserBookings } from "../../api/bookings";
+import { searchFlights } from "../../api/flights";
+import Button from "../../components/Button";
+import Card from "../../components/Card";
+import { COLORS, FONTS, SIZES } from "../../constants/theme";
+import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
+import type { Booking, ScreenNavigationProp } from "../../types";
 
 interface HomeScreenProps {
-  navigation: ScreenNavigationProp<"Home">
+  navigation: ScreenNavigationProp<"Home">;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { theme } = useTheme()
-  const { user } = useAuth()
+  const { theme } = useTheme();
+  const { user } = useAuth();
 
-const flightClasses = [
-  { label: 'Economy', value: 'Economy' },
-  { label: 'Business', value: 'Business' },
-  { label: 'First', value: 'First' },
-];
-
+  const flightClasses = [
+    { label: "Economy", value: "Economy" },
+    { label: "Business", value: "Business" },
+    { label: "First", value: "First" },
+  ];
 
   // Search form state
-  const [from, setFrom] = useState("")
-  const [to, setTo] = useState("")
-  const [departureDate, setDepartureDate] = useState(new Date())
-  const [returnDate, setReturnDate] = useState<Date | null>(null)
-  const [passengers, setPassengers] = useState(1)
-  const [tripType, setTripType] = useState<"one-way" | "round-trip">("one-way")
-const [flightClass, setFlightClass] = useState<"Economy" | "Business" | "First">("Economy");
-const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [showDeparturePicker, setShowDeparturePicker] = useState(false)
-  const [showReturnPicker, setShowReturnPicker] = useState(false)
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [departureDate, setDepartureDate] = useState(new Date());
+  const [returnDate, setReturnDate] = useState<Date | null>(null);
+  const [passengers, setPassengers] = useState(1);
+  const [tripType, setTripType] = useState<"one-way" | "round-trip">("one-way");
+  const [flightClass, setFlightClass] = useState<
+    "Economy" | "Business" | "First"
+  >("Economy");
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [showDeparturePicker, setShowDeparturePicker] = useState(false);
+  const [showReturnPicker, setShowReturnPicker] = useState(false);
 
   // Data state
-  const [recentBookings, setRecentBookings] = useState<Booking[]>([])
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [popularDestinations, setPopularDestinations] = useState([
     { city: "New York", country: "USA", code: "NYC", image: "🗽" },
     { city: "London", country: "UK", code: "LON", image: "🏰" },
@@ -55,77 +65,88 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
     { city: "Paris", country: "France", code: "PAR", image: "🗼" },
     { city: "Dubai", country: "UAE", code: "DXB", image: "🏜️" },
     { city: "Sydney", country: "Australia", code: "SYD", image: "🏖️" },
-  ])
+  ]);
 
-  const [loading, setLoading] = useState(false)
-  const [bookingsLoading, setBookingsLoading] = useState(true)
+  const [loading, setLoading] = useState(false);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      fetchRecentBookings()
+      fetchRecentBookings();
     }
-  }, [user])
+  }, [user]);
 
   const fetchRecentBookings = async () => {
     try {
-      setBookingsLoading(true)
-      const userId = await AsyncStorage.getItem("userId")
-      const bookings = await getUserBookings(userId || "")
-      setRecentBookings(bookings.slice(0, 3)) // Show only recent 3
+      setBookingsLoading(true);
+      const userId = await AsyncStorage.getItem("userId");
+      const bookings = await getUserBookings(userId || "");
+      setRecentBookings(bookings.slice(0, 3)); // Show only recent 3
     } catch (error) {
-      console.error("Failed to fetch recent bookings:", error)
+      console.error("Failed to fetch recent bookings:", error);
     } finally {
-      setBookingsLoading(false)
+      setBookingsLoading(false);
     }
-  }
+  };
 
   const handleSearch = async () => {
     if (!from.trim() || !to.trim()) {
-      Alert.alert("Error", "Please enter both departure and destination cities")
-      return
+      Alert.alert(
+        "Error",
+        "Please enter both departure and destination cities"
+      );
+      return;
     }
 
     if (from.toLowerCase() === to.toLowerCase()) {
-      Alert.alert("Error", "Departure and destination cities cannot be the same")
-      return
+      Alert.alert(
+        "Error",
+        "Departure and destination cities cannot be the same"
+      );
+      return;
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       const searchParams = {
         from: from.trim(),
         to: to.trim(),
         departureDate: departureDate.toISOString().split("T")[0],
-        returnDate: returnDate ? returnDate.toISOString().split("T")[0] : undefined,
+        returnDate: returnDate
+          ? returnDate.toISOString().split("T")[0]
+          : undefined,
         passengers,
         class: flightClass,
-      }
+      };
 
-      const flights = await searchFlights(searchParams)
+      const flights = await searchFlights(searchParams);
 
       navigation.navigate("FlightResults", {
         flights,
         searchParams,
-      })
+      });
     } catch (error) {
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to search flights")
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to search flights"
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDestinationSelect = (destination: any) => {
-    setTo(destination.code)
-  }
+    setTo(destination.code);
+  };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString([], {
       month: "short",
       day: "numeric",
       year: "numeric",
-    })
-  }
+    });
+  };
 
   const renderRecentBooking = (booking: Booking) => (
     <TouchableOpacity
@@ -145,10 +166,25 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: booking.status === "Confirmed" ? theme.success + "20" : theme.secondary + "20" },
+            {
+              backgroundColor:
+                booking.status === "Confirmed"
+                  ? theme.success + "20"
+                  : theme.secondary + "20",
+            },
           ]}
         >
-          <Text style={[styles.statusText, { color: booking.status === "Confirmed" ? theme.success : theme.secondary }]}>
+          <Text
+            style={[
+              styles.statusText,
+              {
+                color:
+                  booking.status === "Confirmed"
+                    ? theme.success
+                    : theme.secondary,
+              },
+            ]}
+          >
             {booking.status}
           </Text>
         </View>
@@ -160,11 +196,15 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
         {formatDate(new Date(booking.flight.departureTime))}
       </Text>
     </TouchableOpacity>
-  )
+  );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar style={theme.background === COLORS.background ? "dark" : "light"} />
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
+      <StatusBar
+        style={theme.background === COLORS.background ? "dark" : "light"}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -173,7 +213,9 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
             <Text style={[styles.greeting, { color: theme.gray }]}>
               {user ? `Hello, ${user.name.split(" ")[0]}!` : "Welcome!"}
             </Text>
-            <Text style={[styles.title, { color: theme.black }]}>Where to next?</Text>
+            <Text style={[styles.title, { color: theme.black }]}>
+              Where to next?
+            </Text>
           </View>
           <TouchableOpacity
             style={[styles.profileButton, { backgroundColor: theme.lightGray }]}
@@ -184,14 +226,22 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
         </View>
 
         {/* Search Form */}
-        <Card style={[styles.searchCard, { backgroundColor: theme.background }]}>
+        <Card
+          style={[styles.searchCard, { backgroundColor: theme.background }]}
+        >
           {/* Trip Type Selector */}
-          <View style={[styles.tripTypeContainer, { backgroundColor: theme.lightGray }]}>
+          <View
+            style={[
+              styles.tripTypeContainer,
+              { backgroundColor: theme.lightGray },
+            ]}
+          >
             <TouchableOpacity
               style={[
                 styles.tripTypeButton,
                 {
-                  backgroundColor: tripType === "one-way" ? theme.primary : "transparent",
+                  backgroundColor:
+                    tripType === "one-way" ? theme.primary : "transparent",
                 },
               ]}
               onPress={() => setTripType("one-way")}
@@ -211,7 +261,8 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
               style={[
                 styles.tripTypeButton,
                 {
-                  backgroundColor: tripType === "round-trip" ? theme.primary : "transparent",
+                  backgroundColor:
+                    tripType === "round-trip" ? theme.primary : "transparent",
                 },
               ]}
               onPress={() => setTripType("round-trip")}
@@ -232,9 +283,14 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
           {/* From/To Inputs */}
           <View style={styles.routeContainer}>
             <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, { color: theme.gray }]}>From</Text>
+              <Text style={[styles.inputLabel, { color: theme.gray }]}>
+                From
+              </Text>
               <TextInput
-                style={[styles.input, { color: theme.black, borderColor: theme.lightGray }]}
+                style={[
+                  styles.input,
+                  { color: theme.black, borderColor: theme.lightGray },
+                ]}
                 value={from}
                 onChangeText={setFrom}
                 placeholder="Departure city"
@@ -243,13 +299,20 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
             </View>
 
             <TouchableOpacity style={styles.swapButton}>
-              <Ionicons name="swap-horizontal" size={24} color={theme.primary} />
+              <Ionicons
+                name="swap-horizontal"
+                size={24}
+                color={theme.primary}
+              />
             </TouchableOpacity>
 
             <View style={styles.inputContainer}>
               <Text style={[styles.inputLabel, { color: theme.gray }]}>To</Text>
               <TextInput
-                style={[styles.input, { color: theme.black, borderColor: theme.lightGray }]}
+                style={[
+                  styles.input,
+                  { color: theme.black, borderColor: theme.lightGray },
+                ]}
                 value={to}
                 onChangeText={setTo}
                 placeholder="Destination city"
@@ -264,8 +327,12 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
               style={[styles.dateInput, { borderColor: theme.lightGray }]}
               onPress={() => setShowDeparturePicker(true)}
             >
-              <Text style={[styles.inputLabel, { color: theme.gray }]}>Departure</Text>
-              <Text style={[styles.dateText, { color: theme.black }]}>{formatDate(departureDate)}</Text>
+              <Text style={[styles.inputLabel, { color: theme.gray }]}>
+                Departure
+              </Text>
+              <Text style={[styles.dateText, { color: theme.black }]}>
+                {formatDate(departureDate)}
+              </Text>
             </TouchableOpacity>
 
             {tripType === "round-trip" && (
@@ -273,7 +340,9 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
                 style={[styles.dateInput, { borderColor: theme.lightGray }]}
                 onPress={() => setShowReturnPicker(true)}
               >
-                <Text style={[styles.inputLabel, { color: theme.gray }]}>Return</Text>
+                <Text style={[styles.inputLabel, { color: theme.gray }]}>
+                  Return
+                </Text>
                 <Text style={[styles.dateText, { color: theme.black }]}>
                   {returnDate ? formatDate(returnDate) : "Select date"}
                 </Text>
@@ -284,17 +353,27 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
           {/* Passengers and Class */}
           <View style={styles.optionsContainer}>
             <View style={styles.passengerContainer}>
-              <Text style={[styles.inputLabel, { color: theme.gray }]}>Passengers</Text>
+              <Text style={[styles.inputLabel, { color: theme.gray }]}>
+                Passengers
+              </Text>
               <View style={styles.passengerControls}>
                 <TouchableOpacity
-                  style={[styles.passengerButton, { backgroundColor: theme.lightGray }]}
+                  style={[
+                    styles.passengerButton,
+                    { backgroundColor: theme.lightGray },
+                  ]}
                   onPress={() => setPassengers(Math.max(1, passengers - 1))}
                 >
                   <Ionicons name="remove" size={16} color={theme.black} />
                 </TouchableOpacity>
-                <Text style={[styles.passengerCount, { color: theme.black }]}>{passengers}</Text>
+                <Text style={[styles.passengerCount, { color: theme.black }]}>
+                  {passengers}
+                </Text>
                 <TouchableOpacity
-                  style={[styles.passengerButton, { backgroundColor: theme.lightGray }]}
+                  style={[
+                    styles.passengerButton,
+                    { backgroundColor: theme.lightGray },
+                  ]}
                   onPress={() => setPassengers(Math.min(9, passengers + 1))}
                 >
                   <Ionicons name="add" size={16} color={theme.black} />
@@ -303,42 +382,43 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
             </View>
 
             <View style={styles.classContainer}>
-              <Text style={[styles.inputLabel, { color: theme.gray }]}>Class</Text>
-              <View style={styles.classContainer}>
-  <Text style={[styles.inputLabel, { color: theme.gray }]}>Class</Text>
+              <Text style={[styles.inputLabel, { color: theme.gray }]}>
+                Class
+              </Text>
 
-  <TouchableOpacity
-    style={[styles.classSelector, { borderColor: theme.lightGray }]}
-    onPress={() => setDropdownVisible(true)}
-  >
-    <Text style={[styles.classText, { color: theme.black }]}>{flightClass}</Text>
-    <Ionicons name="chevron-down" size={16} color={theme.gray} />
-  </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.classSelector, { borderColor: theme.lightGray }]}
+                onPress={() => setDropdownVisible(true)}
+              >
+                <Text style={[styles.classText, { color: theme.black }]}>
+                  {flightClass}
+                </Text>
+                <Ionicons name="chevron-down" size={16} color={theme.gray} />
+              </TouchableOpacity>
 
-  {/* Dropdown Modal */}
-  <Modal transparent visible={dropdownVisible} animationType="fade">
-    <TouchableOpacity
-      style={styles.modalOverlay}
-      onPress={() => setDropdownVisible(false)}
-      activeOpacity={1}
-    >
-      <View style={styles.dropdown}>
-        {["Economy", "Business", "First"].map((item) => (
-          <TouchableOpacity
-            key={item}
-            onPress={() => {
-              setFlightClass(item as typeof flightClass);
-              setDropdownVisible(false);
-            }}
-            style={styles.dropdownItem}
-          >
-            <Text style={{ color: theme.black }}>{item}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </TouchableOpacity>
-  </Modal>
-</View>
+              {/* Dropdown Modal */}
+              <Modal transparent visible={dropdownVisible} animationType="fade">
+                <TouchableOpacity
+                  style={styles.modalOverlay}
+                  onPress={() => setDropdownVisible(false)}
+                  activeOpacity={1}
+                >
+                  <View style={styles.dropdown}>
+                    {["Economy", "Business", "First"].map((item) => (
+                      <TouchableOpacity
+                        key={item}
+                        onPress={() => {
+                          setFlightClass(item as typeof flightClass);
+                          setDropdownVisible(false);
+                        }}
+                        style={styles.dropdownItem}
+                      >
+                        <Text style={{ color: theme.black }}>{item}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </TouchableOpacity>
+              </Modal>
             </View>
           </View>
 
@@ -353,18 +433,38 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
 
         {/* Popular Destinations */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.black , paddingHorizontal:25, marginBottom:20}]}>Popular Destinations</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: theme.black, paddingHorizontal: 25, marginBottom: 20 },
+            ]}
+          >
+            Popular Destinations
+          </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.destinationsContainer}>
               {popularDestinations.map((destination, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={[styles.destinationCard, { backgroundColor: theme.white }]}
+                  style={[
+                    styles.destinationCard,
+                    { backgroundColor: theme.white },
+                  ]}
                   onPress={() => handleDestinationSelect(destination)}
                 >
-                  <Text style={styles.destinationEmoji}>{destination.image}</Text>
-                  <Text style={[styles.destinationCity, { color: theme.black }]}>{destination.city}</Text>
-                  <Text style={[styles.destinationCountry, { color: theme.gray }]}>{destination.country}</Text>
+                  <Text style={styles.destinationEmoji}>
+                    {destination.image}
+                  </Text>
+                  <Text
+                    style={[styles.destinationCity, { color: theme.black }]}
+                  >
+                    {destination.city}
+                  </Text>
+                  <Text
+                    style={[styles.destinationCountry, { color: theme.gray }]}
+                  >
+                    {destination.country}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -375,21 +475,43 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
         {user && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.black }]}>Recent Bookings</Text>
-              <TouchableOpacity onPress={() => navigation.navigate("MyBookings")}>
-                <Text style={[styles.seeAllText, { color: theme.primary }]}>See All</Text>
+              <Text style={[styles.sectionTitle, { color: theme.black }]}>
+                Recent Bookings
+              </Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("MyBookings")}
+              >
+                <Text style={[styles.seeAllText, { color: theme.primary }]}>
+                  See All
+                </Text>
               </TouchableOpacity>
             </View>
 
             {bookingsLoading ? (
-              <ActivityIndicator size="small" color={theme.primary} style={styles.loadingIndicator} />
+              <ActivityIndicator
+                size="small"
+                color={theme.primary}
+                style={styles.loadingIndicator}
+              />
             ) : recentBookings.length > 0 ? (
-              <View style={styles.bookingsContainer}>{recentBookings.map(renderRecentBooking)}</View>
+              <View style={styles.bookingsContainer}>
+                {recentBookings.map(renderRecentBooking)}
+              </View>
             ) : (
-              <Card style={[styles.emptyBookings, { backgroundColor: theme.white }]}>
-                <Ionicons name="calendar-outline" size={48} color={theme.gray} />
-                <Text style={[styles.emptyText, { color: theme.gray }]}>No recent bookings</Text>
-                <Text style={[styles.emptySubtext, { color: theme.gray }]}>Start planning your next trip!</Text>
+              <Card
+                style={[styles.emptyBookings, { backgroundColor: theme.white }]}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={48}
+                  color={theme.gray}
+                />
+                <Text style={[styles.emptyText, { color: theme.gray }]}>
+                  No recent bookings
+                </Text>
+                <Text style={[styles.emptySubtext, { color: theme.gray }]}>
+                  Start planning your next trip!
+                </Text>
               </Card>
             )}
           </View>
@@ -404,12 +526,12 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
           display="default"
           minimumDate={new Date()}
           onChange={(event, selectedDate) => {
-            setShowDeparturePicker(false)
+            setShowDeparturePicker(false);
             if (selectedDate) {
-              setDepartureDate(selectedDate)
+              setDepartureDate(selectedDate);
               // Reset return date if it's before departure date
               if (returnDate && returnDate <= selectedDate) {
-                setReturnDate(null)
+                setReturnDate(null);
               }
             }
           }}
@@ -418,21 +540,24 @@ const [dropdownVisible, setDropdownVisible] = useState(false);
 
       {showReturnPicker && (
         <DateTimePicker
-          value={returnDate || new Date(departureDate.getTime() + 24 * 60 * 60 * 1000)}
+          value={
+            returnDate ||
+            new Date(departureDate.getTime() + 24 * 60 * 60 * 1000)
+          }
           mode="date"
           display="default"
           minimumDate={new Date(departureDate.getTime() + 24 * 60 * 60 * 1000)}
           onChange={(event, selectedDate) => {
-            setShowReturnPicker(false)
+            setShowReturnPicker(false);
             if (selectedDate) {
-              setReturnDate(selectedDate)
+              setReturnDate(selectedDate);
             }
           }}
         />
       )}
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -671,7 +796,23 @@ const styles = StyleSheet.create({
   loadingIndicator: {
     paddingVertical: 20,
   },
-  
-})
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dropdown: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 10,
+    width: 200,
+    elevation: 5,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+});
 
-export default HomeScreen
+export default HomeScreen;

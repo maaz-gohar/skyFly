@@ -10,6 +10,9 @@ interface User {
   name: string
   email: string
   phone: string
+  address: string
+  city: string
+  country: string
   role: string
 }
 
@@ -19,7 +22,7 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
-  signup: (name: string, email: string, password: string, phone: string) => Promise<void>
+  signup: (name: string, email: string, password: string, confirmPassword:string, phone: string, address: string, city: string, country: string) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   updateUser: (newUserData: Partial<User>) => void
@@ -109,11 +112,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const signup = async (name: string, email: string, password: string, phone: string) => {
+  const signup = async (name: string, email: string, password: string, phone: string, address: string, confirmPassword: string, city: string, country: string) => {
     setIsLoading(true)
     try {
       console.log("📝 Attempting signup for:", email)
-      const response = await apiSignup({ name, email, password, phone })
+      const response = await apiSignup({ name, email, password, phone , address, confirmPassword, city, country})
       console.log("✅ Signup response:", response)
 
       if (response.success && response.data) {

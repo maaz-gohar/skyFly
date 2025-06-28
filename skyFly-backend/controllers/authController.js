@@ -14,6 +14,9 @@ exports.signup = [
     min: 6,
   }),
   check("phone", "Phone number is required").notEmpty(),
+  check("address", "Address is required").notEmpty(),
+  check("city", "City is required").notEmpty(),
+  check("country", "Country number is required").notEmpty(),
   validate,
 
   // Controller
