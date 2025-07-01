@@ -441,13 +441,16 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     paddingHorizontal: 24,
-    paddingBottom: 16,
+    paddingTop: 16,
     gap: 12,
+    height:150
   },
   statCard: {
-    minWidth: 120,
+    // minWidth: 120,
     alignItems: "center",
     paddingVertical: 16,
+    borderRadius: 12,
+    
   },
   statValue: {
     fontFamily: FONTS.bold,
@@ -461,6 +464,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: 24,
     marginBottom: 16,
+    marginTop: 28,
   },
   searchInputContainer: {
     flexDirection: "row",

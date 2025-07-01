@@ -32,6 +32,9 @@ export interface User {
   email: string
   phone: string
   role: "user" | "admin"
+  address: string
+  city: string
+  country: string
   isActive?: boolean
   createdAt: string
   updatedAt: string
@@ -177,11 +180,12 @@ export interface AdminPayment {
 
 // Dashboard Types
 export interface DashboardStats {
-  totalUsers: number
   totalFlights: number
   totalBookings: number
+  totalUsers: number
   totalRevenue: number
-  recentBookings: AdminBooking[]
+  recentBookings: number | object[]
+  activeFlights: number
   monthlyRevenue: {
     month: string
     revenue: number

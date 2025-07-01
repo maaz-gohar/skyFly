@@ -10,25 +10,24 @@ exports.signup = [
   // Validation
   check("name", "Name is required").notEmpty(),
   check("email", "Please include a valid email").isEmail(),
-  check("password", "Password must be at least 6 characters").isLength({
-    min: 6,
-  }),
+  check("password", "Password must be at least 6 characters").isLength({ min: 6 }),
   check("phone", "Phone number is required").notEmpty(),
   check("address", "Address is required").notEmpty(),
   check("city", "City is required").notEmpty(),
-  check("country", "Country number is required").notEmpty(),
+  check("country", "Country is required").notEmpty(),
   validate,
 
-  // Controller
+  // Controller Logic
   asyncHandler(async (req, res) => {
-    const userData = await authService.registerUser(req.body)
+    const userData = await authService.registerUser(req.body, req.file); // pass image file here
 
     res.status(201).json({
       success: true,
+      message: "User registered successfully",
       data: userData,
-    })
+    });
   }),
-]
+];
 
 // @desc    Login user
 // @route   POST /api/auth/login

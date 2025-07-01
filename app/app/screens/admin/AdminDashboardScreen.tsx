@@ -1,28 +1,38 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { Ionicons } from "@expo/vector-icons"
-import { StatusBar } from "expo-status-bar"
-import { useEffect, useState } from "react"
-import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { getDashboardStats } from "../../../api/admin"
-import Card from "../../../components/Card"
-import { COLORS, FONTS, SIZES } from "../../../constants/theme"
-import { useAuth } from "../../../context/AuthContext"
-import { useTheme } from "../../../context/ThemeContext"
-import type { DashboardStats, ScreenNavigationProp } from "../../../types"
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { getDashboardStats } from "../../../api/admin";
+import Card from "../../../components/Card";
+import { COLORS, FONTS, SIZES } from "../../../constants/theme";
+import { useAuth } from "../../../context/AuthContext";
+import { useTheme } from "../../../context/ThemeContext";
+import type { DashboardStats, ScreenNavigationProp } from "../../../types";
 
-const { width } = Dimensions.get("window")
+const { width } = Dimensions.get("window");
 
 interface AdminDashboardScreenProps {
-  navigation: ScreenNavigationProp<"Dashboard">
+  navigation: ScreenNavigationProp<"Dashboard">;
 }
 
-const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation }) => {
-  const { user, logout } = useAuth()
-  const { theme } = useTheme()
+const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
+  navigation,
+}) => {
+  const { user, logout } = useAuth();
+  const { theme } = useTheme();
   const [stats, setStats] = useState<DashboardStats>({
     totalFlights: 0,
     totalBookings: 0,
@@ -30,22 +40,27 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation 
     totalRevenue: 0,
     recentBookings: 0,
     activeFlights: 0,
-  })
-  const [loading, setLoading] = useState(true)
+    monthlyRevenue: [],
+    bookingsByStatus: [],
+    topDestinations: [],
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardStats()
-  }, [])
+    fetchDashboardStats();
+  }, []);
 
   const fetchDashboardStats = async () => {
     try {
-      console.log("📊 Fetching dashboard stats...")
-      const response = await getDashboardStats()
-      console.log("✅ Dashboard stats:", response)
-      setStats(response)
+      console.log("📊 Fetching dashboard stats...");
+      const response = await getDashboardStats();
+      console.log("✅ Dashboard stats:", response);
+
+      // Use response.data instead of entire response
+      setStats(response.data);
     } catch (error) {
-      console.error("❌ Failed to fetch dashboard stats:", error)
-      // Use mock data as fallback
+      console.error("❌ Failed to fetch dashboard stats:", error);
+      // fallback mock data
       setStats({
         totalFlights: 1250,
         totalBookings: 8945,
@@ -53,11 +68,14 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation 
         totalRevenue: 2450000,
         recentBookings: 156,
         activeFlights: 89,
-      })
+        monthlyRevenue: [],
+        bookingsByStatus: [],
+        topDestinations: [],
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -70,16 +88,16 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation 
         style: "destructive",
         onPress: async () => {
           try {
-            await logout()
+            await logout();
             // Navigation will be handled by auth state change
           } catch (error) {
-            console.error("❌ Logout failed:", error)
-            Alert.alert("Error", "Failed to logout. Please try again.")
+            console.error("❌ Logout failed:", error);
+            Alert.alert("Error", "Failed to logout. Please try again.");
           }
         },
       },
-    ])
-  }
+    ]);
+  };
 
   const StatCard = ({
     title,
@@ -88,23 +106,29 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation 
     color,
     subtitle,
   }: {
-    title: string
-    value: string | number
-    icon: string
-    color: string
-    subtitle?: string
+    title: string;
+    value: string | number;
+    icon: string;
+    color: string;
+    subtitle?: string;
   }) => (
     <Card style={[styles.statCard, { backgroundColor: theme.white }]}>
       <View style={styles.statHeader}>
-        <View style={[styles.statIconContainer, { backgroundColor: `${color}20` }]}>
+        <View
+          style={[styles.statIconContainer, { backgroundColor: `${color}20` }]}
+        >
           <Ionicons name={icon as any} size={24} color={color} />
         </View>
         <Text style={[styles.statTitle, { color: theme.gray }]}>{title}</Text>
       </View>
       <Text style={[styles.statValue, { color: theme.black }]}>{value}</Text>
-      {subtitle && <Text style={[styles.statSubtitle, { color: theme.gray }]}>{subtitle}</Text>}
+      {subtitle && (
+        <Text style={[styles.statSubtitle, { color: theme.gray }]}>
+          {subtitle}
+        </Text>
+      )}
     </Card>
-  )
+  );
 
   const QuickAction = ({
     title,
@@ -112,36 +136,61 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation 
     onPress,
     color,
   }: {
-    title: string
-    icon: string
-    onPress: () => void
-    color: string
+    title: string;
+    icon: string;
+    onPress: () => void;
+    color: string;
   }) => (
-    <TouchableOpacity style={[styles.quickAction, { backgroundColor: theme.white }]} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.quickAction, { backgroundColor: theme.white }]}
+      onPress={onPress}
+    >
       <View style={[styles.quickActionIcon, { backgroundColor: `${color}20` }]}>
         <Ionicons name={icon as any} size={24} color={color} />
       </View>
-      <Text style={[styles.quickActionTitle, { color: theme.black }]}>{title}</Text>
+      <Text style={[styles.quickActionTitle, { color: theme.black }]}>
+        {title}
+      </Text>
     </TouchableOpacity>
-  )
+  );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar style={theme.background === COLORS.background ? "dark" : "light"} />
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
+      <StatusBar
+        style={theme.background === COLORS.background ? "dark" : "light"}
+      />
 
       <View style={styles.header}>
         <View>
-          <Text style={[styles.greeting, { color: theme.gray }]}>Welcome back,</Text>
-          <Text style={[styles.adminName, { color: theme.black }]}>{user?.name || "Admin"}</Text>
+          <Text style={[styles.greeting, { color: theme.gray }]}>
+            Welcome back,
+          </Text>
+          <Text style={[styles.adminName, { color: theme.black }]}>
+            {user?.name || "Admin"}
+          </Text>
         </View>
         <View style={styles.headerActions}>
-          <TouchableOpacity style={[styles.notificationButton, { backgroundColor: theme.lightGray }]}>
-            <Ionicons name="notifications-outline" size={24} color={theme.black} />
+          <TouchableOpacity
+            style={[
+              styles.notificationButton,
+              { backgroundColor: theme.lightGray },
+            ]}
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={theme.black}
+            />
             <View style={styles.notificationBadge}>
               <Text style={styles.notificationCount}>3</Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.logoutButton, { backgroundColor: theme.error }]} onPress={handleLogout}>
+          <TouchableOpacity
+            style={[styles.logoutButton, { backgroundColor: theme.error }]}
+            onPress={handleLogout}
+          >
             <Ionicons name="log-out-outline" size={24} color={theme.white} />
           </TouchableOpacity>
         </View>
@@ -150,33 +199,40 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Stats Overview */}
         <View style={styles.statsSection}>
-          <Text style={[styles.sectionTitle, { color: theme.black }]}>Overview</Text>
+          <Text style={[styles.sectionTitle, { color: theme.black }]}>
+            Overview
+          </Text>
 
           <View style={styles.statsGrid}>
             <StatCard
               title="Total Flights"
-              value={stats.totalFlights.toLocaleString()}
+              value={stats.totalFlights?.toLocaleString?.() || "0"}
               icon="airplane-outline"
               color={theme.primary}
-              subtitle={`${stats.activeFlights} active`}
+              subtitle={`${
+                stats.totalFlights === 0 ? 0 : stats.activeFlights || 0
+              } active`}
             />
+
             <StatCard
               title="Total Bookings"
-              value={stats.totalBookings.toLocaleString()}
+              value={stats.totalBookings?.toLocaleString?.() || "0"}
               icon="calendar-outline"
               color={theme.secondary}
-              subtitle={`${stats.recentBookings} this week`}
+              subtitle={`${Array.isArray(stats.recentBookings) ? stats.recentBookings.length : stats.recentBookings || 0} this week`}
             />
+
             <StatCard
               title="Total Users"
-              value={stats.totalUsers.toLocaleString()}
+              value={stats.totalUsers?.toLocaleString?.() || "0"}
               icon="people-outline"
               color={theme.success}
-              subtitle="Active users"
+              subtitle={`${stats.activeUsers || 0} active`}
             />
+
             <StatCard
               title="Revenue"
-              value={`$${(stats.totalRevenue / 1000000).toFixed(1)}M`}
+              value={`$${((stats.totalRevenue || 0) / 1000000).toFixed(1)}M`}
               icon="card-outline"
               color="#FF6B6B"
               subtitle="Total earnings"
@@ -186,7 +242,9 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation 
 
         {/* Quick Actions */}
         <View style={styles.quickActionsSection}>
-          <Text style={[styles.sectionTitle, { color: theme.black }]}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { color: theme.black }]}>
+            Quick Actions
+          </Text>
 
           <View style={styles.quickActionsGrid}>
             <QuickAction
@@ -212,7 +270,10 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation 
               icon="analytics-outline"
               color="#FF6B6B"
               onPress={() => {
-                Alert.alert("Coming Soon", "Reports feature will be available soon!")
+                Alert.alert(
+                  "Coming Soon",
+                  "Reports feature will be available soon!"
+                );
               }}
             />
           </View>
@@ -220,54 +281,96 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ navigation 
 
         {/* Recent Activity */}
         <Card style={[styles.activityCard, { backgroundColor: theme.white }]}>
-          <Text style={[styles.sectionTitle, { color: theme.black }]}>Recent Activity</Text>
+          <Text style={[styles.sectionTitle, { color: theme.black }]}>
+            Recent Activity
+          </Text>
 
           <View style={styles.activityList}>
             <View style={styles.activityItem}>
-              <View style={[styles.activityIcon, { backgroundColor: `${theme.success}20` }]}>
-                <Ionicons name="checkmark-circle" size={16} color={theme.success} />
+              <View
+                style={[
+                  styles.activityIcon,
+                  { backgroundColor: `${theme.success}20` },
+                ]}
+              >
+                <Ionicons
+                  name="checkmark-circle"
+                  size={16}
+                  color={theme.success}
+                />
               </View>
               <View style={styles.activityContent}>
-                <Text style={[styles.activityTitle, { color: theme.black }]}>New booking confirmed</Text>
-                <Text style={[styles.activityTime, { color: theme.gray }]}>2 minutes ago</Text>
+                <Text style={[styles.activityTitle, { color: theme.black }]}>
+                  New booking confirmed
+                </Text>
+                <Text style={[styles.activityTime, { color: theme.gray }]}>
+                  2 minutes ago
+                </Text>
               </View>
             </View>
 
             <View style={styles.activityItem}>
-              <View style={[styles.activityIcon, { backgroundColor: `${theme.primary}20` }]}>
+              <View
+                style={[
+                  styles.activityIcon,
+                  { backgroundColor: `${theme.primary}20` },
+                ]}
+              >
                 <Ionicons name="airplane" size={16} color={theme.primary} />
               </View>
               <View style={styles.activityContent}>
-                <Text style={[styles.activityTitle, { color: theme.black }]}>Flight DL123 updated</Text>
-                <Text style={[styles.activityTime, { color: theme.gray }]}>15 minutes ago</Text>
+                <Text style={[styles.activityTitle, { color: theme.black }]}>
+                  Flight DL123 updated
+                </Text>
+                <Text style={[styles.activityTime, { color: theme.gray }]}>
+                  15 minutes ago
+                </Text>
               </View>
             </View>
 
             <View style={styles.activityItem}>
-              <View style={[styles.activityIcon, { backgroundColor: `${theme.secondary}20` }]}>
+              <View
+                style={[
+                  styles.activityIcon,
+                  { backgroundColor: `${theme.secondary}20` },
+                ]}
+              >
                 <Ionicons name="person-add" size={16} color={theme.secondary} />
               </View>
               <View style={styles.activityContent}>
-                <Text style={[styles.activityTitle, { color: theme.black }]}>New user registered</Text>
-                <Text style={[styles.activityTime, { color: theme.gray }]}>1 hour ago</Text>
+                <Text style={[styles.activityTitle, { color: theme.black }]}>
+                  New user registered
+                </Text>
+                <Text style={[styles.activityTime, { color: theme.gray }]}>
+                  1 hour ago
+                </Text>
               </View>
             </View>
 
             <View style={styles.activityItem}>
-              <View style={[styles.activityIcon, { backgroundColor: `${theme.error}20` }]}>
+              <View
+                style={[
+                  styles.activityIcon,
+                  { backgroundColor: `${theme.error}20` },
+                ]}
+              >
                 <Ionicons name="close-circle" size={16} color={theme.error} />
               </View>
               <View style={styles.activityContent}>
-                <Text style={[styles.activityTitle, { color: theme.black }]}>Booking cancelled</Text>
-                <Text style={[styles.activityTime, { color: theme.gray }]}>2 hours ago</Text>
+                <Text style={[styles.activityTitle, { color: theme.black }]}>
+                  Booking cancelled
+                </Text>
+                <Text style={[styles.activityTime, { color: theme.gray }]}>
+                  2 hours ago
+                </Text>
               </View>
             </View>
           </View>
         </Card>
       </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -438,6 +541,6 @@ const styles = StyleSheet.create({
     fontSize: SIZES.small,
     marginTop: 2,
   },
-})
+});
 
-export default AdminDashboardScreen
+export default AdminDashboardScreen;

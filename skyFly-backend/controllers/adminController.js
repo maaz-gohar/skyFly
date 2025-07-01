@@ -55,10 +55,16 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 
   // Get recent bookings
   const recentBookings = await Booking.find()
-    .populate("user", "name email")
-    .populate("flight", "flightNumber airline origin destination")
+    .populate("userId", "name email")
+    .populate("flightId", "flightNumber airline origin destination departureTime")
     .sort({ createdAt: -1 })
     .limit(5)
+
+  // 🔥 Get active flights: flights with at least one Confirmed or Pending booking
+  const activeFlightIds = await Booking.distinct("flightId", {
+    status: { $in: ["Confirmed", "Pending"] },
+  })
+  const activeFlights = activeFlightIds.length
 
   res.status(200).json({
     success: true,
@@ -71,6 +77,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       monthlyRevenue,
       bookingStats,
       recentBookings,
+      activeFlights, // 👈 now added
     },
   })
 })
@@ -195,25 +202,31 @@ const getAllUsers = asyncHandler(async (req, res) => {
 // @route   PUT /api/admin/users/:id/status
 // @access  Private/Admin
 const updateUserStatus = asyncHandler(async (req, res) => {
-  const { isActive } = req.body
+  const { isActive } = req.body;
 
-  const user = await User.findByIdAndUpdate(req.params.id, { isActive }, { new: true, runValidators: true }).select(
-    "-password",
-  )
+  const newStatus = isActive ? "active" : "inactive";
+
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { status: newStatus },
+    { new: true, runValidators: true }
+  ).select("-password");
 
   if (!user) {
     return res.status(404).json({
       success: false,
       message: "User not found",
-    })
+    });
   }
 
   res.status(200).json({
     success: true,
-    message: `User ${isActive ? "activated" : "deactivated"} successfully`,
-    data: { user },
-  })
-})
+    message: `User ${newStatus} successfully`,
+    data: user,
+  });
+});
+
+
 
 // @desc    Delete user
 // @route   DELETE /api/admin/users/:id
@@ -258,8 +271,8 @@ const getAllBookings = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit
 
   const bookings = await Booking.find()
-    .populate("user", "name email phone")
-    .populate("flight", "flightNumber airline origin destination departureTime")
+    .populate("userId", "name email phone")
+    .populate("flightId", "flightNumber airline origin destination departureTime")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
@@ -286,8 +299,8 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   const { status } = req.body
 
   const booking = await Booking.findByIdAndUpdate(req.params.id, { status }, { new: true, runValidators: true })
-    .populate("user", "name email")
-    .populate("flight", "flightNumber airline")
+    .populate("userId", "name email")
+    .populate("flightId", "flightNumber airline")
 
   if (!booking) {
     return res.status(404).json({
@@ -313,9 +326,9 @@ const getAllPayments = asyncHandler(async (req, res) => {
 
   const payments = await Payment.find()
     .populate({
-      path: "booking",
+      path: "bookingId",
       populate: {
-        path: "user flight",
+        path: "userId flightId",
         select: "name email flightNumber airline",
       },
     })
@@ -351,7 +364,7 @@ const processRefund = asyncHandler(async (req, res) => {
     })
   }
 
-  if (payment.status !== "Completed") {
+  if (payment.paymentStatus !== "Completed") {
     return res.status(400).json({
       success: false,
       message: "Can only refund completed payments",

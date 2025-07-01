@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { Ionicons } from "@expo/vector-icons"
+import { useRouter } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { useState } from "react"
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
@@ -23,25 +24,36 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const { login } = useAuth()
+  const { login , user} = useAuth()
   const { theme } = useTheme()
+  const router  = useRouter();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please enter both email and password")
-      return
-    }
-
-    setLoading(true)
-    try {
-      await login(email, password)
-      navigation.navigate("Main")
-    } catch (error) {
-      Alert.alert("Login Failed", error instanceof Error ? error.message : "Please check your credentials")
-    } finally {
-      setLoading(false)
-    }
+const handleLogin = async () => {
+  if (!email || !password) {
+    Alert.alert("Error", "Please enter both email and password")
+    return
   }
+
+  setLoading(true)
+  try {
+    await login(email, password)
+
+    // ✅ Use user from AuthContext after login
+    if (user?.role === "admin") {
+      navigation.navigate("AdminDashboard")
+    } else {
+      navigation.navigate("Main")
+    }
+
+  } catch (error) {
+    Alert.alert(
+      "Login Failed",
+      error instanceof Error ? error.message : "Please check your credentials"
+    )
+  } finally {
+    setLoading(false)
+  }
+}
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

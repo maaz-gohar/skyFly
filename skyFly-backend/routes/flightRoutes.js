@@ -9,8 +9,8 @@ router.get("/", flightController.getFlights)
 router.get("/:id", flightController.getFlight)
 
 // Admin routes
-// router.post("/", protect, authorize("admin"), flightController.createFlight)
-// router.put("/:id", protect, authorize("admin"), flightController.updateFlight)
-// router.delete("/:id", protect, authorize("admin"), flightController.deleteFlight)
+router.post("/", protect, authorize, flightController.createFlight)
+router.put("/:id", protect, authorize, flightController.updateFlight)
+router.delete("/:id", protect, authorize, flightController.deleteFlight)
 
 module.exports = router

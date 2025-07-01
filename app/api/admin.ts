@@ -11,7 +11,7 @@ import { apiRequest } from "./config"
 
 // Dashboard APIs
 export const getDashboardStats = async (): Promise<ApiResponse<DashboardStats>> => {
-  return await apiRequest("/admin/dashboard", "GET", null, true)
+  return await apiRequest("/admin/dashboard/stats", "GET", null, true)
 }
 
 // Flight Management APIs

@@ -5,6 +5,7 @@ const morgan = require("morgan")
 const connectDB = require("./config/db")
 const { errorHandler } = require("./middlewares/errorMiddleware")
 
+
 // Load environment variables
 dotenv.config()
 
@@ -30,6 +31,7 @@ app.use("/api/flights", require("./routes/flightRoutes"))
 app.use("/api/bookings", require("./routes/bookingRoutes"))
 app.use("/api/payments", require("./routes/paymentRoutes"))
 app.use("/api/users", require("./routes/userRoutes"))
+app.use("/api/admin", require("./routes/adminRoutes"))
 
 // Base route
 app.get("/", (req, res) => {

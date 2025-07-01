@@ -30,7 +30,7 @@ router.route("/flights/:id").put(validateFlight, updateFlight).delete(deleteFlig
 
 // User management routes
 router.get("/users", getAllUsers)
-router.put("/users/:id/status", updateUserStatus)
+router.patch("/users/:id/status", updateUserStatus)
 router.delete("/users/:id", deleteUser)
 
 // Booking management routes

@@ -2,14 +2,17 @@ const User = require("../models/User")
 const { generateToken } = require("../utils/jwtUtils")
 
 // Register user
-exports.registerUser = async (userData) => {
-  const { name, email, password, phone , address , city , country, role} = userData
+exports.registerUser = async (userData, file) => {
+  const { name, email, password, phone, address, city, country, role } = userData;
 
   // Check if user already exists
-  const userExists = await User.findOne({ email })
+  const userExists = await User.findOne({ email });
   if (userExists) {
-    throw new Error("User already exists")
+    throw new Error("User already exists");
   }
+
+  // Handle avatar upload
+  const avatarPath = file ? file.path : "uploads/default-avatar.png"; // fallback to default image in uploads folder
 
   // Create user
   const user = await User.create({
@@ -20,8 +23,9 @@ exports.registerUser = async (userData) => {
     address,
     city,
     country,
-    role: role || "user", // Default to 'user' if no role is provided
-  })
+    role: role || "user",
+    avatar: avatarPath,
+  });
 
   return {
     _id: user._id,
@@ -32,9 +36,10 @@ exports.registerUser = async (userData) => {
     address: user.address,
     city: user.city,
     country: user.country,
+    avatar: user.avatar,
     token: generateToken(user._id),
-  }
-}
+  };
+};
 
 // Login user
 exports.loginUser = async (email, password) => {

@@ -16,6 +16,15 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please add a valid email"],
     },
+        avatar: {
+      type: String, // This will store the URL of the uploaded image
+      default: "https://i.ibb.co/2FxS6Qk/default-avatar.png", // optional fallback/default
+    },
+    status: {
+      type: String,
+      default: "active",
+      enum: ["active", "inactive", "banned"],
+    },
     password: {
       type: String,
       required: [true, "Please add a password"],

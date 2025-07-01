@@ -22,7 +22,7 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
-  signup: (name: string, email: string, password: string, confirmPassword:string, phone: string, address: string, city: string, country: string) => Promise<void>
+  signup: (name: string, email: string, password: string, role:string, confirmPassword:string, phone: string, address: string, city: string, country: string) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   updateUser: (newUserData: Partial<User>) => void
