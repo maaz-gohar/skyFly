@@ -13,7 +13,7 @@ interface User {
   address: string
   city: string
   country: string
-  role: string
+  avatar: string // Optional, handled gracefully
 }
 
 interface AuthContextType {
@@ -22,7 +22,17 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
-  signup: (name: string, email: string, password: string, role:string, confirmPassword:string, phone: string, address: string, city: string, country: string) => Promise<void>
+  signup: (
+    name: string,
+    email: string,
+    password: string,
+    confirmPassword: string,
+    phone: string,
+    address: string,
+    city: string,
+    country: string,
+    avatar: File  // Optional, may be used for profile picture upload
+  ) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   updateUser: (newUserData: Partial<User>) => void
@@ -45,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedToken = await AsyncStorage.getItem("token")
       const storedUserId = await AsyncStorage.getItem("userId")
       console.log("🔑 Stored token:", storedToken ? "Token found" : "No token")
-      console.log("🆔 Stored userId:", storedUserId ? storedUserId : "No user ID")
+      console.log("🆔 Stored userId:", storedUserId || "No user ID")
 
       if (storedToken) {
         setToken(storedToken)
@@ -93,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (newToken) {
           await AsyncStorage.setItem("token", newToken)
-          await AsyncStorage.setItem("userId", userData._id) // ✅ Only store user ID
+          await AsyncStorage.setItem("userId", userData._id)
 
           setToken(newToken)
           setUser(userData)
@@ -112,11 +122,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const signup = async (name: string, email: string, password: string, phone: string, address: string, confirmPassword: string, city: string, country: string) => {
+  const signup = async (
+    name: string,
+    email: string,
+    password: string,
+    confirmPassword: string,
+    phone: string,
+    address: string,
+    city: string,
+    country: string,
+    avatar?: File  // Optional, may be used for profile picture upload
+  ) => {
     setIsLoading(true)
     try {
       console.log("📝 Attempting signup for:", email)
-      const response = await apiSignup({ name, email, password, phone , address, confirmPassword, city, country})
+      const response = await apiSignup({
+        name,
+        email,
+        password,
+        confirmPassword,
+        phone,
+        address,
+        city,
+        country,
+        avatar,  // Optional, may be used for profile picture upload
+      })
       console.log("✅ Signup response:", response)
 
       if (response.success && response.data) {
@@ -124,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (newToken) {
           await AsyncStorage.setItem("token", newToken)
-          await AsyncStorage.setItem("userId", userData._id) // ✅ Only store user ID
+          await AsyncStorage.setItem("userId", userData._id)
 
           setToken(newToken)
           setUser(userData)
@@ -148,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log("🚪 Logging out...")
       await AsyncStorage.removeItem("token")
-      await AsyncStorage.removeItem("userId") // ✅ Clean up stored user ID
+      await AsyncStorage.removeItem("userId")
       setToken(null)
       setUser(null)
       console.log("✅ Logout successful")
@@ -161,7 +191,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = async () => {
     if (!token) return
-
     try {
       console.log("🔄 Refreshing user data...")
       const response = await getCurrentUser()
@@ -179,7 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!prevUser) return prevUser
       return {
         ...prevUser,
-        ...newUserData
+        ...newUserData,
       }
     })
   }
@@ -195,7 +224,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signup,
         logout,
         refreshUser,
-        updateUser
+        updateUser,
       }}
     >
       {children}

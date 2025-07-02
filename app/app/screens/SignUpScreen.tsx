@@ -3,6 +3,8 @@
 import type React from "react"
 
 import { Ionicons } from "@expo/vector-icons"
+import type { ImagePickerAsset } from "expo-image-picker"
+import * as ImagePicker from "expo-image-picker"
 import { StatusBar } from "expo-status-bar"
 import { useState } from "react"
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
@@ -13,6 +15,7 @@ import { COLORS, FONTS, SIZES } from "../../constants/theme"
 import { useAuth } from "../../context/AuthContext"
 import { useTheme } from "../../context/ThemeContext"
 import type { ScreenNavigationProp } from "../../types"
+
 
 interface SignUpScreenProps {
   navigation: ScreenNavigationProp<"SignUp">
@@ -28,12 +31,14 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
   const [city, setCity] = useState("")
   const [country, setCountry] = useState("")
   const [loading, setLoading] = useState(false)
+const [avatar, setAvatar] = useState<ImagePickerAsset | null>(null)
+
 
   const { signup } = useAuth()
   const { theme } = useTheme()
 
   const handleSignUp = async () => {
-    if (!name || !email || !password || !confirmPassword || !phone || !address || !city || !country) {
+    if (!name || !email || !password || !confirmPassword || !phone || !address || !city || !country || !avatar) {
       Alert.alert("Error", "Please fill in all fields")
       return
     }
@@ -45,7 +50,24 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
 
     setLoading(true)
     try {
-      await signup(name, email, password, phone, address, confirmPassword, city, country)
+      await signup(
+  name,
+  email,
+  password,
+  confirmPassword,
+  phone,
+  address,
+  city,
+  country,
+  avatar
+    ? {
+        uri: avatar.uri,
+        name: avatar.fileName || "avatar.jpg",
+        type: avatar.type || "image/jpeg",
+      }
+    : undefined
+)
+
       navigation.navigate("Main")
     } catch (error) {
       Alert.alert("Sign Up Failed", error instanceof Error ? error.message : "Please check your information")
@@ -53,6 +75,25 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
       setLoading(false)
     }
   }
+  const pickAvatar = async () => {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
+  if (!permission.granted) {
+    Alert.alert("Permission required", "Please allow media access to select a profile picture.")
+    return
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    quality: 0.7,
+    allowsEditing: true,
+    aspect: [1, 1],
+  })
+
+  if (!result.canceled && result.assets.length > 0) {
+    setAvatar(result.assets[0])
+  }
+}
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -139,6 +180,16 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
             secureTextEntry
             icon="lock-closed-outline"
           />
+          <TouchableOpacity onPress={pickAvatar} style={styles.avatarPicker}>
+  {avatar ? (
+    <Image source={{ uri: avatar.uri }} style={styles.avatar} />
+  ) : (
+    <View style={[styles.avatarPlaceholder, { backgroundColor: theme.lightGray }]}>
+      <Ionicons name="camera-outline" size={32} color={theme.gray} />
+      <Text style={{ color: theme.gray }}>Add Photo</Text>
+    </View>
+  )}
+</TouchableOpacity>
 
           <Button title="Sign Up" onPress={handleSignUp} gradient loading={loading} style={styles.signUpButton} />
 
@@ -264,6 +315,25 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.semiBold,
     fontSize: SIZES.font,
   },
+  avatarPicker: {
+  alignSelf: "center",
+  marginBottom: 20,
+},
+
+avatar: {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+},
+
+avatarPlaceholder: {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
 })
 
 export default SignUpScreen

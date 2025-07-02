@@ -26,6 +26,7 @@ exports.signup = [
       message: "User registered successfully",
       data: userData,
     });
+    console.log("🚀 Avatar File:", req.file);
   }),
 ];
 

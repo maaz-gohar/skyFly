@@ -11,8 +11,11 @@ exports.registerUser = async (userData, file) => {
     throw new Error("User already exists");
   }
 
+  // Base URL (change to your production URL if deployed)
+  const baseUrl = process.env.BASE_URL || "http://192.168.18.164:5000";
+
   // Handle avatar upload
-  const avatarPath = file ? file.path : "uploads/default-avatar.png"; // fallback to default image in uploads folder
+  const avatarPath = file ? `${baseUrl}/${file.path.replace(/\\/g, "/")}` : `${baseUrl}/uploads/default-avatar.png`;
 
   // Create user
   const user = await User.create({
@@ -57,6 +60,7 @@ exports.loginUser = async (email, password) => {
     email: user.email,
     phone: user.phone,
     role: user.role,
+    avatar: user.avatar,
     token: generateToken(user._id),
   }
 }

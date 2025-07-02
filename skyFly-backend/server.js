@@ -4,6 +4,8 @@ const cors = require("cors")
 const morgan = require("morgan")
 const connectDB = require("./config/db")
 const { errorHandler } = require("./middlewares/errorMiddleware")
+const path = require("path");
+
 
 
 // Load environment variables
@@ -16,6 +18,7 @@ connectDB()
 const app = express()
 
 // Middleware
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors())

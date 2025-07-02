@@ -1,11 +1,9 @@
 "use client";
 
-import type React from "react";
-
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
+import type React from "react";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -24,7 +22,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import type { ScreenNavigationProp } from "../../types";
 
-
 interface ProfileScreenProps {
   navigation: ScreenNavigationProp<"Profile">;
 }
@@ -33,55 +30,39 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const { user, logout } = useAuth();
   const { isDarkMode, toggleTheme, theme } = useTheme();
   const [storedName, setStoredName] = useState<string | null>(null);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-
-
+  const [storedEmail, setStoredEmail] = useState<string | null>(null);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   const menuItems = [
-    {
-      id: "1",
-      title: "Personal Information",
-      icon: "person-outline",
-      screen: "PersonalInfo",
-    },
-    {
-      id: "2",
-      title: "Payment Methods",
-      icon: "card-outline",
-      screen: "PaymentMethods",
-    },
-    {
-      id: "3",
-      title: "Travel Preferences",
-      icon: "airplane-outline",
-      screen: "TravelPreferences",
-    },
-    {
-      id: "4",
-      title: "Frequent Flyer Programs",
-      icon: "star-outline",
-      screen: "FrequentFlyer",
-    },
-    {
-      id: "5",
-      title: "Help & Support",
-      icon: "help-circle-outline",
-      screen: "HelpSupport",
-    },
-    {
-      id: "6",
-      title: "About",
-      icon: "information-circle-outline",
-      screen: "About",
-    },
+    { id: "1", title: "Personal Information", icon: "person-outline", screen: "PersonalInfo" },
+    { id: "2", title: "Payment Methods", icon: "card-outline", screen: "PaymentMethods" },
+    { id: "3", title: "Travel Preferences", icon: "airplane-outline", screen: "TravelPreferences" },
+    { id: "4", title: "Frequent Flyer Programs", icon: "star-outline", screen: "FrequentFlyer" },
+    { id: "5", title: "Help & Support", icon: "help-circle-outline", screen: "HelpSupport" },
+    { id: "6", title: "About", icon: "information-circle-outline", screen: "About" },
   ];
+
+  useEffect(() => {
+    const loadStoredData = async () => {
+      try {
+        const userString = await AsyncStorage.getItem("user");
+        if (userString) {
+          const userObj = JSON.parse(userString);
+          setStoredName(userObj.name);
+          setStoredEmail(userObj.email);
+          setAvatar(userObj.avatar);
+        }
+      } catch (error) {
+        console.error("Failed to load user from AsyncStorage:", error);
+      }
+    };
+
+    loadStoredData();
+  }, []);
 
   const handleLogout = async () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
+      { text: "Cancel", style: "cancel" },
       {
         text: "Logout",
         onPress: async () => {
@@ -91,83 +72,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       },
     ]);
   };
-useEffect(() => {
-  const loadStoredName = async () => {
-    try {
-      const userString = await AsyncStorage.getItem("user");
-      if (userString) {
-        const user = JSON.parse(userString);
-        setStoredName(user.name);
-      }
-    } catch (error) {
-      console.error("Failed to load user from AsyncStorage:", error);
-    }
-  };
-
-  loadStoredName();
-}, []);
-
-const handleChangeProfileImage = () => {
-  Alert.alert("Update Profile Picture", "Choose an option", [
-    {
-      text: "Camera",
-      onPress: async () => {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert("Permission denied", "Camera access is required.");
-          return;
-        }
-        const result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 1,
-        });
-        if (!result.canceled && result.assets.length > 0) {
-          setProfileImage(result.assets[0].uri);
-        }
-      },
-    },
-    {
-      text: "Gallery",
-      onPress: async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert("Permission denied", "Gallery access is required.");
-          return;
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 1,
-        });
-        if (!result.canceled && result.assets.length > 0) {
-          setProfileImage(result.assets[0].uri);
-        }
-      },
-    },
-    {
-      text: "Cancel",
-      style: "cancel",
-    },
-  ]);
-};
-
-
-// const getName = await AsyncStorage.getItem("user");
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
-    >
-      <StatusBar
-        style={theme.background === COLORS.background ? "dark" : "light"}
-      />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style={theme.background === COLORS.background ? "dark" : "light"} />
+
       <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: theme.black }]}>
-          Profile
-        </Text>
+        <Text style={[styles.headerTitle, { color: theme.black }]}>Profile</Text>
         <TouchableOpacity
           style={[styles.settingsButton, { backgroundColor: theme.lightGray }]}
           onPress={() => navigation.navigate("Settings")}
@@ -180,39 +91,28 @@ const handleChangeProfileImage = () => {
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
             <Image
-              source={{uri: profileImage || "https://randomuser.me/api/portraits/men/32.jpg"}}
+              source={{
+                uri: user?.avatar ,
+              }}
               style={styles.profileImage}
             />
-            <TouchableOpacity
-              style={styles.editImageButton}
-              onPress={handleChangeProfileImage}
-            >
-              <Ionicons name="camera-outline" size={20} color={theme.white} />
-            </TouchableOpacity>
           </View>
           <Text style={[styles.profileName, { color: theme.black }]}>
             {user?.name || storedName || "Guest User"}
           </Text>
           <Text style={[styles.profileEmail, { color: theme.gray }]}>
-            {user?.email || "guest@example.com"}
+            {user?.email || storedEmail || "guest@example.com"}
           </Text>
           <TouchableOpacity
-            style={[
-              styles.editProfileButton,
-              { backgroundColor: `${theme.primary}20` },
-            ]}
+            style={[styles.editProfileButton, { backgroundColor: `${theme.primary}20` }]}
             onPress={() => navigation.navigate("PersonalInfo")}
           >
-            <Text style={[styles.editProfileText, { color: theme.primary }]}>
-              Edit Profile
-            </Text>
+            <Text style={[styles.editProfileText, { color: theme.primary }]}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.menuSection}>
-          <Text style={[styles.sectionTitle, { color: theme.black }]}>
-            Account Settings
-          </Text>
+          <Text style={[styles.sectionTitle, { color: theme.black }]}>Account Settings</Text>
           <Card style={[styles.menuCard, { backgroundColor: theme.white }]}>
             {menuItems.map((item, index) => (
               <TouchableOpacity
@@ -221,28 +121,14 @@ const handleChangeProfileImage = () => {
                 onPress={() => navigation.navigate(item.screen as any)}
               >
                 <View
-                  style={[
-                    styles.menuIconContainer,
-                    { backgroundColor: `${theme.primary}20` },
-                  ]}
+                  style={[styles.menuIconContainer, { backgroundColor: `${theme.primary}20` }]}
                 >
-                  <Ionicons
-                    name={item.icon as any}
-                    size={20}
-                    color={theme.primary}
-                  />
+                  <Ionicons name={item.icon as any} size={20} color={theme.primary} />
                 </View>
-                <Text style={[styles.menuItemText, { color: theme.black }]}>
-                  {item.title}
-                </Text>
+                <Text style={[styles.menuItemText, { color: theme.black }]}>{item.title}</Text>
                 <Ionicons name="chevron-forward" size={20} color={theme.gray} />
                 {index !== menuItems.length - 1 && (
-                  <View
-                    style={[
-                      styles.menuDivider,
-                      { backgroundColor: theme.lightGray },
-                    ]}
-                  />
+                  <View style={[styles.menuDivider, { backgroundColor: theme.lightGray }]} />
                 )}
               </TouchableOpacity>
             ))}
@@ -250,30 +136,19 @@ const handleChangeProfileImage = () => {
         </View>
 
         <View style={styles.preferencesSection}>
-          <Text style={[styles.sectionTitle, { color: theme.black }]}>
-            Preferences
-          </Text>
-          <Card
-            style={[styles.preferencesCard, { backgroundColor: theme.white }]}
-          >
+          <Text style={[styles.sectionTitle, { color: theme.black }]}>Preferences</Text>
+          <Card style={[styles.preferencesCard, { backgroundColor: theme.white }]}>
             <View style={styles.preferenceItem}>
               <View style={styles.preferenceTextContainer}>
-                <Text style={[styles.preferenceTitle, { color: theme.black }]}>
-                  Dark Mode
-                </Text>
-                <Text
-                  style={[styles.preferenceDescription, { color: theme.gray }]}
-                >
+                <Text style={[styles.preferenceTitle, { color: theme.black }]}>Dark Mode</Text>
+                <Text style={[styles.preferenceDescription, { color: theme.gray }]}>
                   Switch to dark theme
                 </Text>
               </View>
               <Switch
                 value={isDarkMode}
                 onValueChange={toggleTheme}
-                trackColor={{
-                  false: theme.lightGray,
-                  true: `${theme.primary}80`,
-                }}
+                trackColor={{ false: theme.lightGray, true: `${theme.primary}80` }}
                 thumbColor={isDarkMode ? theme.primary : theme.white}
               />
             </View>
@@ -285,18 +160,16 @@ const handleChangeProfileImage = () => {
           onPress={handleLogout}
         >
           <Ionicons name="log-out-outline" size={20} color={theme.error} />
-          <Text style={[styles.logoutText, { color: theme.error }]}>
-            Logout
-          </Text>
+          <Text style={[styles.logoutText, { color: theme.error }]}>Logout</Text>
         </TouchableOpacity>
 
-        <Text style={[styles.versionText, { color: theme.gray }]}>
-          Version 1.0.0
-        </Text>
+        <Text style={[styles.versionText, { color: theme.gray }]}>Version 1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
