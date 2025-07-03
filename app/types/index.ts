@@ -38,6 +38,8 @@ export interface User {
   isActive?: boolean
   createdAt: string
   updatedAt: string
+  status: "active" | "inactive" | "banned"
+  avatar: string // URL to user's avatar image
 }
 
 export interface UserProfile extends User {
@@ -70,6 +72,7 @@ export interface Flight {
   totalSeats?: number
   class: "Economy" | "Business" | "First"
   isActive?: boolean
+  status: "Scheduled"| "Delayed"| "Cancelled"| "Completed"
   amenities?: string[]
   baggage?: {
     carry: string
@@ -89,6 +92,7 @@ export interface AdminFlight {
   availableSeats: number
   totalSeats?: number
   class: "Economy" | "Business" | "First"
+  status?: "Scheduled"| "Delayed"| "Cancelled"| "Completed"
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -186,6 +190,7 @@ export interface DashboardStats {
   totalRevenue: number
   recentBookings: number | object[]
   activeFlights: number
+  activeUsers: number
   monthlyRevenue: {
     month: string
     revenue: number

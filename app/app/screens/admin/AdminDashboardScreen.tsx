@@ -43,6 +43,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
     monthlyRevenue: [],
     bookingsByStatus: [],
     topDestinations: [],
+    activeUsers: 0, // Initialize activeUsers
   });
   const [loading, setLoading] = useState(true);
 
@@ -71,6 +72,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
         monthlyRevenue: [],
         bookingsByStatus: [],
         topDestinations: [],
+        activeUsers: 12000, // Mock active users
       });
     } finally {
       setLoading(false);

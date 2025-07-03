@@ -1,9 +1,8 @@
 "use client"
 
-import type React from "react"
-
 import { Ionicons } from "@expo/vector-icons"
 import { StatusBar } from "expo-status-bar"
+import type React from "react"
 import { useEffect, useState } from "react"
 import {
   ActivityIndicator,
@@ -42,11 +41,15 @@ const AdminBookingsScreen: React.FC = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true)
-      const bookingData = await getAllBookings()
-      setBookings(bookingData)
-      setFilteredBookings(bookingData)
+      const bookingResponse = await getAllBookings()
+
+      if (bookingResponse.success && Array.isArray(bookingResponse.data.bookings)) {
+        setBookings(bookingResponse.data.bookings)
+        setFilteredBookings(bookingResponse.data.bookings)
+      } else {
+        Alert.alert("Error", "Invalid bookings data received from server")
+      }
     } catch (error) {
-      console.error("Error fetching bookings:", error)
       Alert.alert("Error", error instanceof Error ? error.message : "Failed to load bookings")
     } finally {
       setLoading(false)
@@ -55,49 +58,42 @@ const AdminBookingsScreen: React.FC = () => {
 
   const filterBookings = () => {
     let result = [...bookings]
+    const query = searchQuery.trim().toLowerCase()
 
-    // Apply search query filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
+    if (query) {
       result = result.filter(
         (booking) =>
-          booking.id.toLowerCase().includes(query) ||
-          booking.flight.flightNumber.toLowerCase().includes(query) ||
-          booking.passengers.some((p) => p.name.toLowerCase().includes(query)) ||
-          booking.flight.origin.toLowerCase().includes(query) ||
-          booking.flight.destination.toLowerCase().includes(query),
+          booking._id.toLowerCase().includes(query) ||
+          booking.flightId?.flightNumber?.toLowerCase().includes(query) ||
+          booking.passengers.toString().includes(query) ||
+          booking.flightId?.origin?.toLowerCase().includes(query) ||
+          booking.flightId?.destination?.toLowerCase().includes(query)
       )
     }
 
-    // Apply status filter
     if (filterStatus) {
-      result = result.filter((booking) => booking.status === filterStatus)
+      result = result.filter(
+        (booking) => booking.status.toLowerCase() === filterStatus.toLowerCase()
+      )
     }
 
     setFilteredBookings(result)
   }
 
   const handleViewBooking = (booking: Booking) => {
-    Alert.alert("View Booking", `Booking details for ${booking.id}`, [
-      {
-        text: "OK",
-      },
-    ])
+    Alert.alert("View Booking", `Booking details for ${booking._id}`, [{ text: "OK" }])
   }
 
-  const handleUpdateStatus = async (id: string, newStatus: "confirmed" | "cancelled" | "completed") => {
+  const handleUpdateStatus = async (id: string, newStatus: "Confirmed" | "Cancelled" | "Completed" | "Pending") => {
     Alert.alert("Update Status", `Are you sure you want to mark this booking as ${newStatus}?`, [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
+      { text: "Cancel", style: "cancel" },
       {
         text: "Update",
         onPress: async () => {
           try {
             await updateBookingStatus(id, newStatus)
             Alert.alert("Success", "Booking status updated successfully")
-            fetchBookings() // Refresh the list
+            fetchBookings()
           } catch (error) {
             Alert.alert("Error", error instanceof Error ? error.message : "Failed to update booking status")
           }
@@ -108,13 +104,13 @@ const AdminBookingsScreen: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "confirmed":
+      case "Confirmed":
         return theme.primary
-      case "pending":
+      case "Pending":
         return theme.secondary
-      case "cancelled":
+      case "Cancelled":
         return theme.error
-      case "completed":
+      case "Completed":
         return theme.success
       default:
         return theme.gray
@@ -125,49 +121,26 @@ const AdminBookingsScreen: React.FC = () => {
     <Card style={[styles.bookingCard, { backgroundColor: theme.white }]}>
       <View style={styles.bookingHeader}>
         <View style={styles.bookingInfo}>
-          <Text style={[styles.bookingReference, { color: theme.black }]}>#{item.id}</Text>
-          <Text style={[styles.flightNumber, { color: theme.gray }]}>Flight: {item.flight.flightNumber}</Text>
+            <Text style={[styles.bookingReference, { color: theme.black }]}>
+            #{item._id.slice(-10)}
+            </Text>
+          <Text style={[styles.flightNumber, { color: theme.gray }]}>Flight: {item.flightId.flightNumber}</Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(item.status)}20` }]}>
           <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status.toUpperCase()}</Text>
         </View>
       </View>
 
-      <View style={styles.passengerInfo}>
-        <Ionicons name="person" size={16} color={theme.gray} />
-        <Text style={[styles.passengerName, { color: theme.black }]}>{item.passengers[0]?.name || "N/A"}</Text>
-        <Text style={[styles.passengerCount, { color: theme.gray }]}>
-          {item.passengers.length > 1 ? `+${item.passengers.length - 1} more` : ""}
-        </Text>
-      </View>
-
       <View style={styles.flightRoute}>
         <View style={styles.routePoint}>
-          <Text style={[styles.routeCity, { color: theme.black }]}>{item.flight.origin}</Text>
+          <Text style={[styles.routeCity, { color: theme.black }]}>{item.flightId.origin}</Text>
         </View>
         <View style={styles.routeLine}>
           <View style={[styles.line, { backgroundColor: theme.lightGray }]} />
           <Ionicons name="airplane" size={16} color={theme.primary} style={styles.planeIcon} />
         </View>
         <View style={styles.routePoint}>
-          <Text style={[styles.routeCity, { color: theme.black }]}>{item.flight.destination}</Text>
-        </View>
-      </View>
-
-      <View style={styles.bookingDetails}>
-        <View style={styles.detailItem}>
-          <Text style={[styles.detailLabel, { color: theme.gray }]}>Date</Text>
-          <Text style={[styles.detailValue, { color: theme.black }]}>
-            {new Date(item.flight.departureTime).toLocaleDateString()}
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={[styles.detailLabel, { color: theme.gray }]}>Amount</Text>
-          <Text style={[styles.detailValue, { color: theme.black }]}>${item.totalAmount}</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={[styles.detailLabel, { color: theme.gray }]}>Passengers</Text>
-          <Text style={[styles.detailValue, { color: theme.black }]}>{item.passengers.length}</Text>
+          <Text style={[styles.routeCity, { color: theme.black }]}>{item.flightId.destination}</Text>
         </View>
       </View>
 
@@ -180,30 +153,30 @@ const AdminBookingsScreen: React.FC = () => {
           <Text style={[styles.actionButtonText, { color: theme.primary }]}>View</Text>
         </TouchableOpacity>
 
-        {item.status === "pending" && (
+        {item.status === "Pending" && (
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: `${theme.success}20` }]}
-            onPress={() => handleUpdateStatus(item.id, "confirmed")}
+            onPress={() => handleUpdateStatus(item._id, "Confirmed")}
           >
             <Ionicons name="checkmark-outline" size={16} color={theme.success} />
             <Text style={[styles.actionButtonText, { color: theme.success }]}>Confirm</Text>
           </TouchableOpacity>
         )}
 
-        {(item.status === "pending" || item.status === "confirmed") && (
+        {(item.status === "Pending" || item.status === "Confirmed") && (
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: `${theme.error}20` }]}
-            onPress={() => handleUpdateStatus(item.id, "cancelled")}
+            onPress={() => handleUpdateStatus(item._id, "Cancelled")}
           >
             <Ionicons name="close-outline" size={16} color={theme.error} />
             <Text style={[styles.actionButtonText, { color: theme.error }]}>Cancel</Text>
           </TouchableOpacity>
         )}
 
-        {item.status === "confirmed" && (
+        {item.status === "Confirmed" && (
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: `${theme.success}20` }]}
-            onPress={() => handleUpdateStatus(item.id, "completed")}
+            onPress={() => handleUpdateStatus(item._id, "Completed")}
           >
             <Ionicons name="checkmark-done-outline" size={16} color={theme.success} />
             <Text style={[styles.actionButtonText, { color: theme.success }]}>Complete</Text>
@@ -282,7 +255,7 @@ const AdminBookingsScreen: React.FC = () => {
         <FlatList
           data={filteredBookings}
           renderItem={renderBookingItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           contentContainerStyle={styles.bookingsList}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={

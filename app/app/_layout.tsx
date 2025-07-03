@@ -47,6 +47,7 @@ import AdminFlightFormScreen from "./screens/admin/AdminFlightFormScreen"
 import AdminFlightsScreen from "./screens/admin/AdminFlightsScreen"
 import AdminPaymentsScreen from "./screens/admin/AdminPaymentsScreen"
 import AdminUsersScreen from "./screens/admin/AdminUsersScreen"
+import UpdateFlightScreen from "./screens/admin/FlightUpdateScreen"
 
 // Splash
 import Splash from "./screens/SplashScreen"
@@ -88,6 +89,7 @@ export type RootStackParamList = {
   Settings: undefined
   MyBookings: undefined
   AdminFlightForm: undefined
+  FlightUpdate: { flight: any }
 }
 
 export type TabParamList = {
@@ -202,6 +204,7 @@ function RootStack() {
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="AdminFlightForm" component={AdminFlightFormScreen} />
+      <Stack.Screen name="FlightUpdate" component={UpdateFlightScreen} />
     </Stack.Navigator>
   )
 }

@@ -62,6 +62,11 @@ const flightSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    status: {
+      type: String,
+      enum: ["Scheduled", "Delayed", "Cancelled", "Completed"],
+      default: "Scheduled",
+    },
   },
   {
     timestamps: true,

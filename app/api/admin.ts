@@ -20,18 +20,18 @@ export const getAllFlights = async (page = 1, limit = 10): Promise<ApiResponse<A
 }
 
 export const createFlight = async (flightData: FlightFormData): Promise<ApiResponse<AdminFlight>> => {
-  return await apiRequest("/admin/flights", "POST", flightData, true)
+  return await apiRequest("/flights", "POST", flightData, true)
 }
 
 export const updateFlight = async (
   flightId: string,
   flightData: Partial<FlightFormData>,
 ): Promise<ApiResponse<AdminFlight>> => {
-  return await apiRequest(`/admin/flights/${flightId}`, "PUT", flightData, true)
+  return await apiRequest(`/flights/${flightId}`, "PUT", flightData, true)
 }
 
 export const deleteFlight = async (flightId: string): Promise<ApiResponse> => {
-  return await apiRequest(`/admin/flights/${flightId}`, "DELETE", null, true)
+  return await apiRequest(`/flights/${flightId}`, "DELETE", null, true)
 }
 
 export const toggleFlightStatus = async (flightId: string): Promise<ApiResponse<AdminFlight>> => {
@@ -39,8 +39,8 @@ export const toggleFlightStatus = async (flightId: string): Promise<ApiResponse<
 }
 
 // User Management APIs
-export const getAllUsers = async (page = 1, limit = 10): Promise<ApiResponse<User[]>> => {
-  return await apiRequest(`/admin/users?page=${page}&limit=${limit}`, "GET", null, true)
+export const getAllUsers = async (): Promise<ApiResponse<User[]>> => {
+  return await apiRequest(`/admin/users`, "GET", null, true)
 }
 
 export const updateUserStatus = async (userId: string, isActive: boolean): Promise<ApiResponse<User>> => {
@@ -56,8 +56,8 @@ export const updateUserRole = async (userId: string, role: "user" | "admin"): Pr
 }
 
 // Booking Management APIs
-export const getAllBookings = async (page = 1, limit = 10): Promise<ApiResponse<AdminBooking[]>> => {
-  return await apiRequest(`/admin/bookings?page=${page}&limit=${limit}`, "GET", null, true)
+export const getAllBookings = async (): Promise<ApiResponse<{ bookings: AdminBooking[] }>> => {
+  return await apiRequest(`/admin/bookings`, "GET", null, true)
 }
 
 export const updateBookingStatus = async (

@@ -116,6 +116,7 @@ const AdminFlightFormScreen: React.FC<AdminFlightFormScreenProps> = ({ navigatio
         stops: Number(formData.stops),
         status: formData.status as "scheduled" | "delayed" | "cancelled" | "completed",
       }
+      console.log("Flight data submitted:", flightData)
 
       if (isEditing && existingFlight) {
         await updateFlight(existingFlight.id, flightData)
@@ -124,7 +125,6 @@ const AdminFlightFormScreen: React.FC<AdminFlightFormScreenProps> = ({ navigatio
         await createFlight(flightData)
         Alert.alert("Success", "Flight created successfully")
       }
-
       navigation.goBack()
     } catch (error) {
       Alert.alert("Error", error instanceof Error ? error.message : "Failed to save flight")

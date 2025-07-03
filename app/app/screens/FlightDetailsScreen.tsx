@@ -8,12 +8,11 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import {
   Alert,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../../components/Button";
@@ -134,7 +133,7 @@ const handleBooking = async () => {
           ]}
         >
           <View style={styles.airlineContainer}>
-            <Image source={{ uri: flight.logo }} style={styles.airlineLogo} />
+            {/* <Image source={{ uri: flight.logo }} style={styles.airlineLogo} />  */}
             <Text style={[styles.airlineName, { color: theme.black }]}>
               {flight.airline}
             </Text>
@@ -696,7 +695,7 @@ const styles = StyleSheet.create({
   airlineContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 6,
   },
   airlineLogo: {
     width: 24,
@@ -730,7 +729,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontFamily: FONTS.bold,
-    fontSize: SIZES.medium,
+    fontSize: SIZES.small,
     color: COLORS.black,
   },
   locationText: {

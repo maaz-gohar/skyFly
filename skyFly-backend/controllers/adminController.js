@@ -11,7 +11,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   const totalUsers = await User.countDocuments()
   const totalFlights = await Flight.countDocuments()
   const totalBookings = await Booking.countDocuments()
-  const activeUsers = await User.countDocuments({ isActive: true })
+  const activeUsers = await User.countDocuments({ status: "active" })
 
   // Calculate total revenue
   const revenueResult = await Payment.aggregate([
@@ -178,10 +178,8 @@ const deleteFlight = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const getAllUsers = asyncHandler(async (req, res) => {
   const page = Number.parseInt(req.query.page) || 1
-  const limit = Number.parseInt(req.query.limit) || 10
-  const skip = (page - 1) * limit
 
-  const users = await User.find().select("-password").sort({ createdAt: -1 }).skip(skip).limit(limit)
+  const users = await User.find().select("-password")
 
   const total = await User.countDocuments()
 
@@ -189,11 +187,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
     success: true,
     data: {
       users,
-      pagination: {
-        current: page,
-        pages: Math.ceil(total / limit),
-        total,
-      },
+      
     },
   })
 })
@@ -225,6 +219,40 @@ const updateUserStatus = asyncHandler(async (req, res) => {
     data: user,
   });
 });
+
+// @desc    Update user status
+// @route   PUT /api/admin/users/:id/status
+// @access  Private/Admin
+const updateUserRole = asyncHandler(async (req, res) => {
+  const { role } = req.body;
+
+  if (!["user", "admin"].includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid role provided",
+    });
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { role },
+    { new: true, runValidators: true }
+  ).select("-password");
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: `User becomes ${role} successfully`,
+    data: user,
+  });
+});
+
 
 
 
@@ -266,16 +294,16 @@ const deleteUser = asyncHandler(async (req, res) => {
 // @route   GET /api/admin/bookings
 // @access  Private/Admin
 const getAllBookings = asyncHandler(async (req, res) => {
-  const page = Number.parseInt(req.query.page) || 1
-  const limit = Number.parseInt(req.query.limit) || 10
-  const skip = (page - 1) * limit
+  // const page = Number.parseInt(req.query.page) || 1
+  // const limit = Number.parseInt(req.query.limit) || 10
+  // const skip = (page - 1) * limit
 
   const bookings = await Booking.find()
     .populate("userId", "name email phone")
     .populate("flightId", "flightNumber airline origin destination departureTime")
     .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
+    // .skip(skip)
+    // .limit(limit)
 
   const total = await Booking.countDocuments()
 
@@ -283,11 +311,11 @@ const getAllBookings = asyncHandler(async (req, res) => {
     success: true,
     data: {
       bookings,
-      pagination: {
-        current: page,
-        pages: Math.ceil(total / limit),
-        total,
-      },
+      // pagination: {
+      //   current: page,
+      //   pages: Math.ceil(total / limit),
+      //   total,
+      // },
     },
   })
 })
@@ -393,6 +421,7 @@ module.exports = {
   deleteFlight,
   getAllUsers,
   updateUserStatus,
+  updateUserRole,
   deleteUser,
   getAllBookings,
   updateBookingStatus,

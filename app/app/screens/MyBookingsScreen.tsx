@@ -165,7 +165,7 @@ const MyBookingsScreen: React.FC<MyBookingsScreenProps> = ({ navigation }) => {
       case "confirmed":
         return theme.success || "#10B981";
       case "pending":
-        return theme.warning || "#F59E0B";
+        return theme.secondary || "#F59E0B";
       case "cancelled":
         return theme.error || "#EF4444";
       case "completed":
@@ -276,9 +276,9 @@ const MyBookingsScreen: React.FC<MyBookingsScreenProps> = ({ navigation }) => {
             await AsyncStorage.setItem("bookingId", item.id); // ✅ Store booking ID
             navigation.navigate("Payment", {
               flight: item.flight,
-              passengerDetails: {
-                passengers: item.passengers,
-              },
+              // passengerDetails: {
+              //   passengers: item.passengers,
+              // },
               totalPrice: item.totalAmount,
               booking: item,
             });

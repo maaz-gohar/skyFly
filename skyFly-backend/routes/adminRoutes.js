@@ -13,6 +13,7 @@ const {
   updateBookingStatus,
   getAllPayments,
   processRefund,
+  updateUserRole,
 } = require("../controllers/adminController")
 const { protect, admin } = require("../middlewares/authMiddleware")
 const { validateFlight, validateBookingStatus, validatePaymentStatus } = require("../middlewares/validationMiddleware")
@@ -31,11 +32,12 @@ router.route("/flights/:id").put(validateFlight, updateFlight).delete(deleteFlig
 // User management routes
 router.get("/users", getAllUsers)
 router.patch("/users/:id/status", updateUserStatus)
+router.patch("/users/:id/role", updateUserRole)
 router.delete("/users/:id", deleteUser)
 
 // Booking management routes
 router.get("/bookings", getAllBookings)
-router.put("/bookings/:id/status", validateBookingStatus, updateBookingStatus)
+router.patch("/bookings/:id/status", validateBookingStatus, updateBookingStatus)
 
 // Payment management routes
 router.get("/payments", getAllPayments)

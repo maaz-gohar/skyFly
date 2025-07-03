@@ -1,103 +1,128 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { Ionicons } from "@expo/vector-icons"
-import type { ImagePickerAsset } from "expo-image-picker"
-import * as ImagePicker from "expo-image-picker"
-import { StatusBar } from "expo-status-bar"
-import { useState } from "react"
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import Button from "../../components/Button"
-import Input from "../../components/Input"
-import { COLORS, FONTS, SIZES } from "../../constants/theme"
-import { useAuth } from "../../context/AuthContext"
-import { useTheme } from "../../context/ThemeContext"
-import type { ScreenNavigationProp } from "../../types"
-
+import { Ionicons } from "@expo/vector-icons";
+import type { ImagePickerAsset } from "expo-image-picker";
+import * as ImagePicker from "expo-image-picker";
+import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
+import { COLORS, FONTS, SIZES } from "../../constants/theme";
+import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
+import type { ScreenNavigationProp } from "../../types";
 
 interface SignUpScreenProps {
-  navigation: ScreenNavigationProp<"SignUp">
+  navigation: ScreenNavigationProp<"SignUp">;
 }
 
 const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [phone, setPhone] = useState("")
-  const [address, setAddress] = useState("")
-  const [city, setCity] = useState("")
-  const [country, setCountry] = useState("")
-  const [loading, setLoading] = useState(false)
-const [avatar, setAvatar] = useState<ImagePickerAsset | null>(null)
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [avatar, setAvatar] = useState<ImagePickerAsset | null>(null);
 
-
-  const { signup } = useAuth()
-  const { theme } = useTheme()
+  const { signup } = useAuth();
+  const { theme } = useTheme();
 
   const handleSignUp = async () => {
-    if (!name || !email || !password || !confirmPassword || !phone || !address || !city || !country || !avatar) {
-      Alert.alert("Error", "Please fill in all fields")
-      return
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !phone ||
+      !address ||
+      !city ||
+      !country ||
+      !avatar
+    ) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match")
-      return
+      Alert.alert("Error", "Passwords do not match");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
       await signup(
-  name,
-  email,
-  password,
-  confirmPassword,
-  phone,
-  address,
-  city,
-  country,
-  avatar
-    ? {
-        uri: avatar.uri,
-        name: avatar.fileName || "avatar.jpg",
-        type: avatar.type || "image/jpeg",
-      }
-    : undefined
-)
+        name,
+        email,
+        password,
+        confirmPassword,
+        phone,
+        address,
+        city,
+        country,
+        avatar
+          ? {
+              uri: avatar.uri,
+              name: avatar.fileName || "avatar.jpg",
+              type: avatar.type || "image/jpeg",
+            }
+          : undefined
+      );
 
-      navigation.navigate("Main")
+      navigation.navigate("Main");
     } catch (error) {
-      Alert.alert("Sign Up Failed", error instanceof Error ? error.message : "Please check your information")
+      Alert.alert(
+        "Sign Up Failed",
+        error instanceof Error ? error.message : "Please check your information"
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
   const pickAvatar = async () => {
-  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
-  if (!permission.granted) {
-    Alert.alert("Permission required", "Please allow media access to select a profile picture.")
-    return
-  }
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission required",
+        "Please allow media access to select a profile picture."
+      );
+      return;
+    }
 
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    quality: 0.7,
-    allowsEditing: true,
-    aspect: [1, 1],
-  })
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+      allowsEditing: true,
+      aspect: [1, 1],
+    });
 
-  if (!result.canceled && result.assets.length > 0) {
-    setAvatar(result.assets[0])
-  }
-}
-
+    if (!result.canceled && result.assets.length > 0) {
+      setAvatar(result.assets[0]);
+    }
+  };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar style={theme.background === COLORS.background ? "dark" : "light"} />
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
+      <StatusBar
+        style={theme.background === COLORS.background ? "dark" : "light"}
+      />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <TouchableOpacity
           style={[styles.backButton, { backgroundColor: theme.lightGray }]}
@@ -107,8 +132,12 @@ const [avatar, setAvatar] = useState<ImagePickerAsset | null>(null)
         </TouchableOpacity>
 
         <View style={styles.headerContainer}>
-          <Text style={[styles.title, { color: theme.black }]}>Create Account</Text>
-          <Text style={[styles.subtitle, { color: theme.gray }]}>Sign up to start your journey</Text>
+          <Text style={[styles.title, { color: theme.black }]}>
+            Create Account
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.gray }]}>
+            Sign up to start your journey
+          </Text>
         </View>
 
         <View style={styles.formContainer}>
@@ -181,34 +210,57 @@ const [avatar, setAvatar] = useState<ImagePickerAsset | null>(null)
             icon="lock-closed-outline"
           />
           <TouchableOpacity onPress={pickAvatar} style={styles.avatarPicker}>
-  {avatar ? (
-    <Image source={{ uri: avatar.uri }} style={styles.avatar} />
-  ) : (
-    <View style={[styles.avatarPlaceholder, { backgroundColor: theme.lightGray }]}>
-      <Ionicons name="camera-outline" size={32} color={theme.gray} />
-      <Text style={{ color: theme.gray }}>Add Photo</Text>
-    </View>
-  )}
-</TouchableOpacity>
+            {avatar ? (
+              <Image source={{ uri: avatar.uri }} style={styles.avatar} />
+            ) : (
+              <View
+                style={[
+                  styles.avatarPlaceholder,
+                  { backgroundColor: theme.lightGray },
+                ]}
+              >
+                <Ionicons name="camera-outline" size={32} color={theme.gray} />
+                <Text style={{ color: theme.gray }}>Add Photo</Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
-          <Button title="Sign Up" onPress={handleSignUp} gradient loading={loading} style={styles.signUpButton} />
+          <Button
+            title="Sign Up"
+            onPress={handleSignUp}
+            gradient
+            loading={loading}
+            style={styles.signUpButton}
+          />
 
           <View style={styles.dividerContainer}>
-            <View style={[styles.divider, { backgroundColor: theme.lightGray }]} />
+            <View
+              style={[styles.divider, { backgroundColor: theme.lightGray }]}
+            />
             <Text style={[styles.dividerText, { color: theme.gray }]}>OR</Text>
-            <View style={[styles.divider, { backgroundColor: theme.lightGray }]} />
+            <View
+              style={[styles.divider, { backgroundColor: theme.lightGray }]}
+            />
           </View>
 
           <View style={styles.socialContainer}>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: theme.white }]}>
+            <TouchableOpacity
+              style={[styles.socialButton, { backgroundColor: theme.white }]}
+            >
               <Image
-                source={{ uri: "https://cdn-icons-png.flaticon.com/512/2991/2991148.png" }}
+                source={{
+                  uri: "https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+                }}
                 style={styles.socialIcon}
               />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: theme.white }]}>
+            <TouchableOpacity
+              style={[styles.socialButton, { backgroundColor: theme.white }]}
+            >
               <Image
-                source={{ uri: "https://cdn-icons-png.flaticon.com/512/5968/5968764.png" }}
+                source={{
+                  uri: "https://cdn-icons-png.flaticon.com/512/5968/5968764.png",
+                }}
                 style={styles.socialIcon}
               />
             </TouchableOpacity>
@@ -216,15 +268,19 @@ const [avatar, setAvatar] = useState<ImagePickerAsset | null>(null)
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: theme.gray }]}>Already have an account? </Text>
+          <Text style={[styles.footerText, { color: theme.gray }]}>
+            Already have an account?{" "}
+          </Text>
           <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text style={[styles.loginText, { color: theme.primary }]}>Login</Text>
+            <Text style={[styles.loginText, { color: theme.primary }]}>
+              Login
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -316,24 +372,23 @@ const styles = StyleSheet.create({
     fontSize: SIZES.font,
   },
   avatarPicker: {
-  alignSelf: "center",
-  marginBottom: 20,
-},
+    alignSelf: "center",
+    marginBottom: 20,
+  },
 
-avatar: {
-  width: 100,
-  height: 100,
-  borderRadius: 50,
-},
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
 
-avatarPlaceholder: {
-  width: 100,
-  height: 100,
-  borderRadius: 50,
-  justifyContent: "center",
-  alignItems: "center",
-},
+  avatarPlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
-})
-
-export default SignUpScreen
+export default SignUpScreen;

@@ -47,8 +47,12 @@ const AdminFlightsScreen: React.FC<AdminFlightsScreenProps> = ({ navigation }) =
     try {
       setLoading(true)
       const flightData = await getAllFlights()
-      setFlights(flightData)
-      setFilteredFlights(flightData)
+      if(flightData.success && Array.isArray(flightData.data.flights)) {
+        setFlights(flightData.data.flights)
+        setFilteredFlights(flightData.data.flights)
+      }
+      // setFlights(flightData)
+      // setFilteredFlights(flightData)
     } catch (error) {
       console.error("Error fetching flights:", error)
       Alert.alert("Error", error instanceof Error ? error.message : "Failed to load flights")
@@ -84,9 +88,10 @@ const AdminFlightsScreen: React.FC<AdminFlightsScreenProps> = ({ navigation }) =
     navigation.navigate("AdminFlightForm")
   }
 
-  const handleEditFlight = (flight: Flight) => {
-    navigation.navigate("AdminFlightForm", { flight })
-  }
+const handleEditFlight = (flight: Flight) => {
+  navigation.navigate("FlightUpdate", { flight })
+}
+
 
   const handleDeleteFlight = async (id: string) => {
     Alert.alert("Delete Flight", "Are you sure you want to delete this flight?", [
@@ -112,13 +117,13 @@ const AdminFlightsScreen: React.FC<AdminFlightsScreenProps> = ({ navigation }) =
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "scheduled":
+      case "Scheduled":
         return theme.primary
-      case "delayed":
+      case "Delayed":
         return theme.secondary
-      case "cancelled":
+      case "Cancelled":
         return theme.error
-      case "completed":
+      case "Completed":
         return theme.success
       default:
         return theme.gray
@@ -182,7 +187,7 @@ const AdminFlightsScreen: React.FC<AdminFlightsScreenProps> = ({ navigation }) =
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: `${theme.error}20` }]}
-          onPress={() => handleDeleteFlight(item.id)}
+          onPress={() => handleDeleteFlight(item._id)}
         >
           <Ionicons name="trash-outline" size={16} color={theme.error} />
           <Text style={[styles.actionButtonText, { color: theme.error }]}>Delete</Text>
