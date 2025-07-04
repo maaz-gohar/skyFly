@@ -36,11 +36,12 @@ const handleLogin = async () => {
 
   setLoading(true)
   try {
-    await login(email, password)
+    // ✅ Get the user object directly from login()
+    const loggedInUser = await login(email, password)
 
-    // ✅ Use user from AuthContext after login
-    if (user?.role === "admin") {
-      navigation.navigate("AdminDashboard")
+    // ✅ Navigate based on returned user's role
+    if (loggedInUser?.role === "admin") {
+      navigation.navigate("Admin")
     } else {
       navigation.navigate("Main")
     }
@@ -54,6 +55,7 @@ const handleLogin = async () => {
     setLoading(false)
   }
 }
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

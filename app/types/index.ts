@@ -187,7 +187,7 @@ export interface DashboardStats {
   totalFlights: number
   totalBookings: number
   totalUsers: number
-  totalRevenue: number
+  totalEarning: number
   recentBookings: number | object[]
   activeFlights: number
   activeUsers: number

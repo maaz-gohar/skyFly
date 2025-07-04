@@ -37,7 +37,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
     totalFlights: 0,
     totalBookings: 0,
     totalUsers: 0,
-    totalRevenue: 0,
+    totalEarning: 0,
     recentBookings: 0,
     activeFlights: 0,
     monthlyRevenue: [],
@@ -66,7 +66,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
         totalFlights: 1250,
         totalBookings: 8945,
         totalUsers: 15420,
-        totalRevenue: 2450000,
+        totalEarning: 2450000,
         recentBookings: 156,
         activeFlights: 89,
         monthlyRevenue: [],
@@ -91,7 +91,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
         onPress: async () => {
           try {
             await logout();
-            // Navigation will be handled by auth state change
+            navigation.navigate("Welcome" as any);
           } catch (error) {
             console.error("❌ Logout failed:", error);
             Alert.alert("Error", "Failed to logout. Please try again.");
@@ -234,7 +234,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
 
             <StatCard
               title="Revenue"
-              value={`$${((stats.totalRevenue || 0) / 1000000).toFixed(1)}M`}
+              value={`$${stats.totalEarning.toLocaleString()} $`}
               icon="card-outline"
               color="#FF6B6B"
               subtitle="Total earnings"

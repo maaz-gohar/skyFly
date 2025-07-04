@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { Ionicons } from "@expo/vector-icons"
+import dayjs from "dayjs"
 import { StatusBar } from "expo-status-bar"
 import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
@@ -28,19 +29,24 @@ const AdminFlightFormScreen: React.FC<AdminFlightFormScreenProps> = ({ navigatio
   const isEditing = !!route.params?.flight
   const existingFlight = route.params?.flight
 
-  const [formData, setFormData] = useState({
-    flightNumber: existingFlight?.flightNumber || "",
-    airline: existingFlight?.airline || "",
-    origin: existingFlight?.origin || "",
-    destination: existingFlight?.destination || "",
-    departureTime: existingFlight?.departureTime || "",
-    arrivalTime: existingFlight?.arrivalTime || "",
-    price: existingFlight?.price?.toString() || "",
-    availableSeats: existingFlight?.availableSeats?.toString() || "",
-    duration: existingFlight?.duration?.toString() || "",
-    stops: existingFlight?.stops?.toString() || "0",
-    status: existingFlight?.status || "scheduled",
-  })
+const [formData, setFormData] = useState({
+  flightNumber: existingFlight?.flightNumber || "",
+  airline: existingFlight?.airline || "",
+  origin: existingFlight?.origin || "",
+  destination: existingFlight?.destination || "",
+  departureTime: existingFlight?.departureTime
+    ? dayjs(existingFlight.departureTime).format("DD-MM-YYYY HH:mm")
+    : "",
+  arrivalTime: existingFlight?.arrivalTime
+    ? dayjs(existingFlight.arrivalTime).format("DD-MM-YYYY HH:mm")
+    : "",
+  price: existingFlight?.price?.toString() || "",
+  availableSeats: existingFlight?.availableSeats?.toString() || "",
+  duration: existingFlight?.duration?.toString() || "",
+  stops: existingFlight?.stops?.toString() || "0",
+  status: existingFlight?.status || "scheduled",
+})
+
 
   const [loading, setLoading] = useState(false)
 
@@ -119,7 +125,7 @@ const AdminFlightFormScreen: React.FC<AdminFlightFormScreenProps> = ({ navigatio
       console.log("Flight data submitted:", flightData)
 
       if (isEditing && existingFlight) {
-        await updateFlight(existingFlight.id, flightData)
+        await updateFlight(existingFlight._id, flightData)
         Alert.alert("Success", "Flight updated successfully")
       } else {
         await createFlight(flightData)
@@ -250,7 +256,7 @@ const AdminFlightFormScreen: React.FC<AdminFlightFormScreenProps> = ({ navigatio
           <View style={styles.statusContainer}>
             <Text style={[styles.statusLabel, { color: theme.black }]}>Status</Text>
             <View style={styles.statusOptions}>
-              {["scheduled", "delayed", "cancelled", "completed"].map((status) => (
+              {["Scheduled", "Delayed", "Cancelled", "Completed"].map((status) => (
                 <TouchableOpacity
                   key={status}
                   style={[

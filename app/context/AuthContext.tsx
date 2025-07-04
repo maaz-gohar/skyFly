@@ -14,6 +14,7 @@ interface User {
   city: string
   country: string
   avatar: string // Optional, handled gracefully
+  role: "user" | "admin"
 }
 
 interface AuthContextType {
@@ -91,36 +92,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      console.log("🔐 Attempting login for:", email)
-      const response = await apiLogin({ email, password })
-      console.log("✅ Login response:", response)
+const login = async (email: string, password: string) => {
+  setIsLoading(true)
+  try {
+    console.log("🔐 Attempting login for:", email)
+    const response = await apiLogin({ email, password })
+    console.log("✅ Login response:", response)
 
-      if (response.success && response.data) {
-        const { token: newToken, ...userData } = response.data
+    if (response.success && response.data) {
+      const { token: newToken, ...userData } = response.data
 
-        if (newToken) {
-          await AsyncStorage.setItem("token", newToken)
-          await AsyncStorage.setItem("userId", userData._id)
+      if (newToken) {
+        await AsyncStorage.setItem("token", newToken)
+        await AsyncStorage.setItem("userId", userData._id)
 
-          setToken(newToken)
-          setUser(userData)
-          console.log("✅ Login successful, user set:", userData)
-        } else {
-          throw new Error("No token received from server")
-        }
+        setToken(newToken)
+        setUser(userData)
+
+        console.log("✅ Login successful, user set:", userData)
+
+        // ✅ Return userData so LoginScreen can use it immediately
+        return userData
       } else {
-        throw new Error((response as any).message || "Login failed")
+        throw new Error("No token received from server")
       }
-    } catch (error) {
-      console.error("❌ Login failed:", error)
-      throw error
-    } finally {
-      setIsLoading(false)
+    } else {
+      throw new Error((response as any).message || "Login failed")
     }
+  } catch (error) {
+    console.error("❌ Login failed:", error)
+    throw error
+  } finally {
+    setIsLoading(false)
   }
+}
+
 
   const signup = async (
     name: string,

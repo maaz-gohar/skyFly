@@ -1,354 +1,234 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { Ionicons } from "@expo/vector-icons"
-import { StatusBar } from "expo-status-bar"
-import { useEffect, useState } from "react"
+import { getAllPayments } from "@/api/admin";
+import { AdminPayment } from "@/types";
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
-} from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import Card from "../../../components/Card"
-import { COLORS, FONTS, SIZES } from "../../../constants/theme"
-import { useTheme } from "../../../context/ThemeContext"
+  View
+} from "react-native";
+import { TextInput } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Card from "../../../components/Card";
+import { COLORS, FONTS, SIZES } from "../../../constants/theme";
+import { useTheme } from "../../../context/ThemeContext";
 
-interface Payment {
-  id: string
-  bookingId: string
-  userId: string
-  userName: string
-  amount: number
-  currency: string
-  status: "completed" | "pending" | "failed" | "refunded"
-  paymentMethod: "card" | "paypal" | "bank_transfer"
-  transactionId: string
-  createdAt: string
-  updatedAt: string
-  flightDetails: {
-    from: string
-    to: string
-    date: string
-  }
-}
+
 
 const AdminPaymentsScreen: React.FC = () => {
-  const { theme } = useTheme()
-  const [payments, setPayments] = useState<Payment[]>([])
-  const [filteredPayments, setFilteredPayments] = useState<Payment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterStatus, setFilterStatus] = useState<string | null>(null)
+  const { theme } = useTheme();
+  const [payments, setPayments] = useState<AdminPayment[]>([]);
+  const [filteredPayments, setFilteredPayments] = useState<AdminPayment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPayments()
-  }, [])
+    fetchPayments();
+  }, []);
 
   useEffect(() => {
-    filterPayments()
-  }, [searchQuery, filterStatus, payments])
+    filterPayments();
+  }, [searchQuery, filterStatus, payments]);
 
   const fetchPayments = async () => {
     try {
-      // Mock data for demonstration
-      const mockPayments: Payment[] = [
-        {
-          id: "1",
-          bookingId: "BK001",
-          userId: "U001",
-          userName: "John Smith",
-          amount: 450.0,
-          currency: "USD",
-          status: "completed",
-          paymentMethod: "card",
-          transactionId: "TXN001234567",
-          createdAt: "2024-01-15T10:30:00Z",
-          updatedAt: "2024-01-15T10:30:00Z",
-          flightDetails: {
-            from: "New York",
-            to: "Los Angeles",
-            date: "2024-02-15",
-          },
-        },
-        {
-          id: "2",
-          bookingId: "BK002",
-          userId: "U002",
-          userName: "Sarah Johnson",
-          amount: 680.5,
-          currency: "USD",
-          status: "pending",
-          paymentMethod: "paypal",
-          transactionId: "TXN001234568",
-          createdAt: "2024-01-16T14:20:00Z",
-          updatedAt: "2024-01-16T14:20:00Z",
-          flightDetails: {
-            from: "Chicago",
-            to: "Miami",
-            date: "2024-02-20",
-          },
-        },
-        {
-          id: "3",
-          bookingId: "BK003",
-          userId: "U003",
-          userName: "Michael Brown",
-          amount: 320.75,
-          currency: "USD",
-          status: "failed",
-          paymentMethod: "card",
-          transactionId: "TXN001234569",
-          createdAt: "2024-01-17T09:15:00Z",
-          updatedAt: "2024-01-17T09:15:00Z",
-          flightDetails: {
-            from: "Boston",
-            to: "Seattle",
-            date: "2024-02-25",
-          },
-        },
-        {
-          id: "4",
-          bookingId: "BK004",
-          userId: "U004",
-          userName: "Emily Davis",
-          amount: 890.0,
-          currency: "USD",
-          status: "completed",
-          paymentMethod: "bank_transfer",
-          transactionId: "TXN001234570",
-          createdAt: "2024-01-18T16:45:00Z",
-          updatedAt: "2024-01-18T16:45:00Z",
-          flightDetails: {
-            from: "San Francisco",
-            to: "New York",
-            date: "2024-03-01",
-          },
-        },
-        {
-          id: "5",
-          bookingId: "BK005",
-          userId: "U005",
-          userName: "David Wilson",
-          amount: 550.25,
-          currency: "USD",
-          status: "refunded",
-          paymentMethod: "card",
-          transactionId: "TXN001234571",
-          createdAt: "2024-01-19T11:30:00Z",
-          updatedAt: "2024-01-19T11:30:00Z",
-          flightDetails: {
-            from: "Denver",
-            to: "Atlanta",
-            date: "2024-03-05",
-          },
-        },
-      ]
-
-      setPayments(mockPayments)
-      setFilteredPayments(mockPayments)
+      setLoading(true);
+      const paymentData = await getAllPayments();
+      if (paymentData.success && Array.isArray(paymentData.data.payments)) {
+        setPayments(paymentData.data.payments);
+        setFilteredPayments(paymentData.data.payments);
+      }
     } catch (error) {
-      console.error("Error fetching payments:", error)
-      Alert.alert("Error", "Failed to load payments")
+      console.error("Error fetching payments:", error);
+      Alert.alert("Error", "Failed to load payments");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const filterPayments = () => {
-    let result = [...payments]
+    let result = [...payments];
+    const query = searchQuery.toLowerCase();
 
-    // Apply search query filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(
-        (payment) =>
-          payment.userName.toLowerCase().includes(query) ||
-          payment.bookingId.toLowerCase().includes(query) ||
-          payment.transactionId.toLowerCase().includes(query) ||
-          payment.flightDetails.from.toLowerCase().includes(query) ||
-          payment.flightDetails.to.toLowerCase().includes(query),
-      )
+      result = result.filter((payment) => {
+        const userName = payment.bookingId.userId.name.toLowerCase();
+        const bookingId = payment.bookingId._id.toLowerCase();
+        const transactionId = (payment.transactionId || "").toLowerCase();
+        const airline = payment.bookingId.flightId.airline.toLowerCase();
+        const flightNumber =
+          payment.bookingId.flightId.flightNumber.toLowerCase();
+        return (
+          userName.includes(query) ||
+          bookingId.includes(query) ||
+          transactionId.includes(query) ||
+          airline.includes(query) ||
+          flightNumber.includes(query)
+        );
+      });
     }
 
-    // Apply status filter
     if (filterStatus) {
-      result = result.filter((payment) => payment.status === filterStatus)
+      result = result.filter(
+        (payment) => payment.paymentStatus.toLowerCase() === filterStatus
+      );
     }
 
-    setFilteredPayments(result)
-  }
+    setFilteredPayments(result);
+  };
 
-  const handleViewPayment = (payment: Payment) => {
+  const handleViewPayment = (payment: AdminPayment) => {
     Alert.alert(
       "Payment Details",
-      `Transaction ID: ${payment.transactionId}\nAmount: $${payment.amount}\nStatus: ${payment.status}\nMethod: ${payment.paymentMethod}`,
-      [{ text: "OK" }],
-    )
-  }
-
-  const handleRefundPayment = (payment: Payment) => {
-    if (payment.status !== "completed") {
-      Alert.alert("Error", "Only completed payments can be refunded")
-      return
-    }
-
-    Alert.alert("Refund Payment", `Are you sure you want to refund $${payment.amount} to ${payment.userName}?`, [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Refund",
-        style: "destructive",
-        onPress: () => {
-          // In a real app, this would call an API
-          setPayments(payments.map((p) => (p.id === payment.id ? { ...p, status: "refunded" as const } : p)))
-          Alert.alert("Success", "Payment refunded successfully")
-        },
-      },
-    ])
-  }
+      `Transaction ID: ${payment.transactionId}\nAmount: $${payment.amount}\nStatus: ${payment.paymentStatus}\nMethod: ${payment.paymentMethod}`,
+      [{ text: "OK" }]
+    );
+  };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "completed":
-        return theme.success
-      case "pending":
-        return theme.warning
-      case "failed":
-        return theme.error
-      case "refunded":
-        return theme.secondary
+        return theme.success;
       default:
-        return theme.gray
+        return theme.gray;
     }
-  }
+  };
 
   const getPaymentMethodIcon = (method: string) => {
-    switch (method) {
-      case "card":
-        return "card-outline"
+    switch (method.toLowerCase()) {
+      case "credit card":
+      case "debit card":
+        return "card-outline";
       case "paypal":
-        return "logo-paypal"
-      case "bank_transfer":
-        return "business-outline"
+        return "logo-paypal";
+      case "bank transfer":
+        return "business-outline";
       default:
-        return "wallet-outline"
+        return "wallet-outline";
     }
-  }
+  };
 
-  const renderPaymentItem = ({ item }: { item: Payment }) => (
+  const renderPaymentItem = ({ item }: { item: AdminPayment }) => (
     <Card style={[styles.paymentCard, { backgroundColor: theme.white }]}>
       <View style={styles.paymentHeader}>
         <View style={styles.paymentInfo}>
-          <Text style={[styles.bookingId, { color: theme.black }]}>#{item.bookingId}</Text>
-          <Text style={[styles.userName, { color: theme.gray }]}>{item.userName}</Text>
+          <Text style={[styles.bookingId, { color: theme.black }]}>
+            #{item.bookingId._id}
+          </Text>
+          <Text style={[styles.userName, { color: theme.gray }]}>
+            {item.bookingId.userId.name}
+          </Text>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(item.status)}20` }]}>
-          <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status.toUpperCase()}</Text>
+        <View
+          style={[
+            styles.statusBadge,
+            { backgroundColor: `${getStatusColor(item.paymentStatus)}20` },
+          ]}
+        >
+          <Text
+            style={[
+              styles.statusText,
+              { color: getStatusColor(item.paymentStatus) },
+            ]}
+          >
+            {item.paymentStatus.toUpperCase()}
+          </Text>
         </View>
       </View>
 
       <View style={styles.amountContainer}>
         <Text style={[styles.amount, { color: theme.black }]}>
-          ${item.amount.toFixed(2)} {item.currency}
+          ${item.amount.toFixed(2)}
         </Text>
         <View style={styles.paymentMethodContainer}>
-          <Ionicons name={getPaymentMethodIcon(item.paymentMethod) as any} size={16} color={theme.gray} />
+          <Ionicons
+            name={getPaymentMethodIcon(item.paymentMethod) as any}
+            size={16}
+            color={theme.gray}
+          />
           <Text style={[styles.paymentMethod, { color: theme.gray }]}>
-            {item.paymentMethod.replace("_", " ").toUpperCase()}
+            {item.paymentMethod.toUpperCase()}
           </Text>
         </View>
-      </View>
-
-      <View style={styles.flightDetails}>
-        <View style={styles.routeContainer}>
-          <Ionicons name="airplane-outline" size={16} color={theme.gray} />
-          <Text style={[styles.route, { color: theme.black }]}>
-            {item.flightDetails.from} → {item.flightDetails.to}
-          </Text>
-        </View>
-        <Text style={[styles.flightDate, { color: theme.gray }]}>
-          {new Date(item.flightDetails.date).toLocaleDateString()}
-        </Text>
       </View>
 
       <View style={styles.transactionDetails}>
-        <Text style={[styles.transactionId, { color: theme.gray }]}>Transaction: {item.transactionId}</Text>
+        <Text style={[styles.transactionId, { color: theme.gray }]}>
+          Transaction: {item.transactionId || "N/A"}
+        </Text>
         <Text style={[styles.paymentDate, { color: theme.gray }]}>
-          {new Date(item.createdAt).toLocaleDateString()} at {new Date(item.createdAt).toLocaleTimeString()}
+          {new Date(item.createdAt).toLocaleDateString()} at{" "}
+          {new Date(item.createdAt).toLocaleTimeString()}
         </Text>
       </View>
 
       <View style={styles.actionButtons}>
         <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: `${theme.primary}20` }]}
+          style={[
+            styles.actionButton,
+            { backgroundColor: `${theme.primary}20` },
+          ]}
           onPress={() => handleViewPayment(item)}
         >
           <Ionicons name="eye-outline" size={16} color={theme.primary} />
-          <Text style={[styles.actionButtonText, { color: theme.primary }]}>View</Text>
+          <Text style={[styles.actionButtonText, { color: theme.primary }]}>
+            View
+          </Text>
         </TouchableOpacity>
-
-        {item.status === "completed" && (
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: `${theme.error}20` }]}
-            onPress={() => handleRefundPayment(item)}
-          >
-            <Ionicons name="return-down-back-outline" size={16} color={theme.error} />
-            <Text style={[styles.actionButtonText, { color: theme.error }]}>Refund</Text>
-          </TouchableOpacity>
-        )}
       </View>
     </Card>
-  )
+  );
 
   const totalAmount = filteredPayments.reduce(
-    (sum, payment) => (payment.status === "completed" ? sum + payment.amount : sum),
-    0,
-  )
+    (sum, payment) =>
+      payment.paymentStatus.toLowerCase() === "completed"
+        ? sum + payment.amount
+        : sum,
+    0
+  );
 
-  const completedPayments = filteredPayments.filter((p) => p.status === "completed").length
-  const pendingPayments = filteredPayments.filter((p) => p.status === "pending").length
-  const failedPayments = filteredPayments.filter((p) => p.status === "failed").length
+  const completedPayments = filteredPayments.filter(
+    (p) => p.paymentStatus.toLowerCase() === "completed"
+  ).length;
+  const pendingPayments = filteredPayments.filter(
+    (p) => p.paymentStatus.toLowerCase() === "pending"
+  ).length;
+  const failedPayments = filteredPayments.filter(
+    (p) => p.paymentStatus.toLowerCase() === "failed"
+  ).length;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar style={theme.background === COLORS.background ? "dark" : "light"} />
+    <SafeAreaView
+      style={[styles.container,{ backgroundColor: theme.background }]}
+    >
+      <StatusBar
+        style={theme.background === COLORS.background ? "dark" : "light"}
+      />
 
       <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: theme.black }]}>Payment Management</Text>
+        <Text style={[styles.headerTitle, { color: theme.black }]}>
+          Payment Management
+        </Text>
       </View>
 
       {/* Stats Cards */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsContainer}>
-        <Card style={[styles.statCard, { backgroundColor: theme.white }]}>
-          <Text style={[styles.statValue, { color: theme.success }]}>${totalAmount.toFixed(2)}</Text>
-          <Text style={[styles.statLabel, { color: theme.gray }]}>Total Revenue</Text>
-        </Card>
-        <Card style={[styles.statCard, { backgroundColor: theme.white }]}>
-          <Text style={[styles.statValue, { color: theme.primary }]}>{completedPayments}</Text>
-          <Text style={[styles.statLabel, { color: theme.gray }]}>Completed</Text>
-        </Card>
-        <Card style={[styles.statCard, { backgroundColor: theme.white }]}>
-          <Text style={[styles.statValue, { color: theme.warning }]}>{pendingPayments}</Text>
-          <Text style={[styles.statLabel, { color: theme.gray }]}>Pending</Text>
-        </Card>
-        <Card style={[styles.statCard, { backgroundColor: theme.white }]}>
-          <Text style={[styles.statValue, { color: theme.error }]}>{failedPayments}</Text>
-          <Text style={[styles.statLabel, { color: theme.gray }]}>Failed</Text>
-        </Card>
-      </ScrollView>
-
-      <View style={styles.searchContainer}>
-        <View style={[styles.searchInputContainer, { backgroundColor: theme.white, borderColor: theme.lightGray }]}>
+            <View style={styles.searchContainer}>
+        <View
+          style={[
+            styles.searchInputContainer,
+            { backgroundColor: theme.white, borderColor: theme.lightGray },
+          ]}
+        >
           <Ionicons name="search" size={20} color={theme.gray} />
           <TextInput
             style={[styles.searchInput, { color: theme.black }]}
@@ -364,69 +244,69 @@ const AdminPaymentsScreen: React.FC = () => {
           ) : null}
         </View>
       </View>
+      <ScrollView
+        horizontal
+        bounces={false}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.statsContainer}
+      >
+        <Card style={[styles.statCard, { backgroundColor: theme.white }]}>
+          <Text style={[styles.statValue, { color: theme.success }]}>
+            ${totalAmount.toFixed(2)}
+          </Text>
+          <Text style={[styles.statLabel, { color: theme.gray }]}>
+            Total Revenue
+          </Text>
+        </Card>
+        <Card style={[styles.statCard, { backgroundColor: theme.white }]}>
+          <Text style={[styles.statValue, { color: theme.primary }]}>
+            {completedPayments}
+          </Text>
+          <Text style={[styles.statLabel, { color: theme.gray }]}>
+            Completed
+          </Text>
+        </Card>
+        <Card style={[styles.statCard, { backgroundColor: theme.white }]}>
+          <Text style={[styles.statValue, { color: theme.secondary }]}>
+            {pendingPayments}
+          </Text>
+          <Text style={[styles.statLabel, { color: theme.gray }]}>Pending</Text>
+        </Card>
+        <Card style={[styles.statCard, { backgroundColor: theme.white }]}>
+          <Text style={[styles.statValue, { color: theme.error }]}>
+            {failedPayments}
+          </Text>
+          <Text style={[styles.statLabel, { color: theme.gray }]}>Failed</Text>
+        </Card>
+      </ScrollView>
 
-      <View style={styles.filterContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-          {["All", "completed", "pending", "failed", "refunded"].map((status) => (
-            <TouchableOpacity
-              key={status}
-              style={[
-                styles.filterChip,
-                {
-                  backgroundColor:
-                    (status === "All" && filterStatus === null) || filterStatus === status
-                      ? theme.primary
-                      : `${theme.primary}20`,
-                },
-              ]}
-              onPress={() => setFilterStatus(status === "All" ? null : status)}
-            >
-              <Text
-                style={[
-                  styles.filterChipText,
-                  {
-                    color:
-                      (status === "All" && filterStatus === null) || filterStatus === status
-                        ? theme.white
-                        : theme.primary,
-                  },
-                ]}
-              >
-                {status === "All" ? "All" : status.charAt(0).toUpperCase() + status.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.primary} />
-          <Text style={[styles.loadingText, { color: theme.gray }]}>Loading payments...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredPayments}
-          renderItem={renderPaymentItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.paymentsList}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="card-outline" size={64} color={theme.gray} />
-              <Text style={[styles.emptyText, { color: theme.gray }]}>No payments found</Text>
-              <Text style={[styles.emptySubtext, { color: theme.gray }]}>Try adjusting your search or filters</Text>
-            </View>
-          }
-        />
-      )}
+      <FlatList
+        data={filteredPayments}
+        renderItem={renderPaymentItem}
+        keyExtractor={(item) => item._id}
+        contentContainerStyle={styles.paymentsList}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Ionicons name="card-outline" size={64} color={theme.gray} />
+            <Text style={[styles.emptyText, { color: theme.gray }]}>
+              No payments found
+            </Text>
+            <Text style={[styles.emptySubtext, { color: theme.gray }]}>
+              Try adjusting your search or filters
+            </Text>
+          </View>
+        }
+      />
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
-  container: {
+  container:{
     flex: 1,
+    // marginBottom:90
   },
   header: {
     flexDirection: "row",
@@ -441,30 +321,35 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     paddingHorizontal: 24,
-    paddingTop: 16,
+    // paddingVertical: 16,
     gap: 12,
-    height:150
-  },
-  statCard: {
-    // minWidth: 120,
+    flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
-    borderRadius: 12,
-    
+    // height: 120,
   },
+
+  statCard: {
+    minWidth: 120,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+    padding: 16,
+    height:"60%",
+  },
+
   statValue: {
     fontFamily: FONTS.bold,
     fontSize: SIZES.large,
+    marginTop: 8,
   },
   statLabel: {
     fontFamily: FONTS.regular,
     fontSize: SIZES.small,
-    marginTop: 4,
+    marginTop: 8,
   },
   searchContainer: {
     paddingHorizontal: 24,
-    marginBottom: 16,
-    marginTop: 28,
+    // marginBottom: 16,
   },
   searchInputContainer: {
     flexDirection: "row",
@@ -480,24 +365,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontFamily: FONTS.regular,
     fontSize: SIZES.font,
-  },
-  filterContainer: {
-    marginBottom: 16,
-  },
-  filterScroll: {
-    paddingHorizontal: 24,
-    gap: 8,
-    flexDirection: "row",
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  filterChipText: {
-    fontFamily: FONTS.medium,
-    fontSize: SIZES.small,
   },
   paymentsList: {
     paddingHorizontal: 24,
@@ -631,6 +498,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
   },
-})
+});
 
-export default AdminPaymentsScreen
+export default AdminPaymentsScreen;

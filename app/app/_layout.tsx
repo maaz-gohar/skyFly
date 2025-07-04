@@ -47,13 +47,13 @@ import AdminFlightFormScreen from "./screens/admin/AdminFlightFormScreen"
 import AdminFlightsScreen from "./screens/admin/AdminFlightsScreen"
 import AdminPaymentsScreen from "./screens/admin/AdminPaymentsScreen"
 import AdminUsersScreen from "./screens/admin/AdminUsersScreen"
-import UpdateFlightScreen from "./screens/admin/FlightUpdateScreen"
 
 // Splash
 import Splash from "./screens/SplashScreen"
 
 // Theme
 import { COLORS } from "../constants/theme"
+import FlightUpdateScreen from "./screens/admin/FlightUpdateScreen"
 
 // Navigation Types
 export type RootStackParamList = {
@@ -89,7 +89,7 @@ export type RootStackParamList = {
   Settings: undefined
   MyBookings: undefined
   AdminFlightForm: undefined
-  FlightUpdate: { flight: any }
+  UpdateForm: { flight: any }
 }
 
 export type TabParamList = {
@@ -204,7 +204,7 @@ function RootStack() {
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="AdminFlightForm" component={AdminFlightFormScreen} />
-      <Stack.Screen name="FlightUpdate" component={UpdateFlightScreen} />
+      <Stack.Screen name="UpdateForm" component={FlightUpdateScreen} />
     </Stack.Navigator>
   )
 }

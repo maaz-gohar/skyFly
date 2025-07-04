@@ -1,33 +1,33 @@
-const asyncHandler = require("../utils/asyncHandler")
-const User = require("../models/User")
-const Flight = require("../models/Flight")
-const Booking = require("../models/Booking")
-const Payment = require("../models/Payment")
+const asyncHandler = require("../utils/asyncHandler");
+const User = require("../models/User");
+const Flight = require("../models/Flight");
+const Booking = require("../models/Booking");
+const Payment = require("../models/Payment");
 
 // @desc    Get dashboard statistics
 // @route   GET /api/admin/dashboard/stats
 // @access  Private/Admin
 const getDashboardStats = asyncHandler(async (req, res) => {
-  const totalUsers = await User.countDocuments()
-  const totalFlights = await Flight.countDocuments()
-  const totalBookings = await Booking.countDocuments()
-  const activeUsers = await User.countDocuments({ status: "active" })
+  const totalUsers = await User.countDocuments();
+  const totalFlights = await Flight.countDocuments();
+  const totalBookings = await Booking.countDocuments();
+  const activeUsers = await User.countDocuments({ status: "active" });
 
-  // Calculate total revenue
+  // ✅ Calculate total earnings from completed payments
   const revenueResult = await Payment.aggregate([
-    { $match: { status: "Completed" } },
+    { $match: { paymentStatus: "Completed" } },
     { $group: { _id: null, total: { $sum: "$amount" } } },
-  ])
-  const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0
+  ]);
+  const totalEarning = revenueResult.length > 0 ? revenueResult[0].total : 0;
 
-  // Get monthly revenue for the last 6 months
-  const sixMonthsAgo = new Date()
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+  // 📊 Monthly revenue from completed payments in last 6 months
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
   const monthlyRevenue = await Payment.aggregate([
     {
       $match: {
-        status: "Completed",
+        paymentStatus: "Completed",
         createdAt: { $gte: sixMonthsAgo },
       },
     },
@@ -41,9 +41,8 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       },
     },
     { $sort: { "_id.year": 1, "_id.month": 1 } },
-  ])
+  ]);
 
-  // Get booking status distribution
   const bookingStats = await Booking.aggregate([
     {
       $group: {
@@ -51,20 +50,18 @@ const getDashboardStats = asyncHandler(async (req, res) => {
         count: { $sum: 1 },
       },
     },
-  ])
+  ]);
 
-  // Get recent bookings
   const recentBookings = await Booking.find()
     .populate("userId", "name email")
     .populate("flightId", "flightNumber airline origin destination departureTime")
     .sort({ createdAt: -1 })
-    .limit(5)
+    .limit(5);
 
-  // 🔥 Get active flights: flights with at least one Confirmed or Pending booking
   const activeFlightIds = await Booking.distinct("flightId", {
     status: { $in: ["Confirmed", "Pending"] },
-  })
-  const activeFlights = activeFlightIds.length
+  });
+  const activeFlights = activeFlightIds.length;
 
   res.status(200).json({
     success: true,
@@ -73,14 +70,15 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       totalFlights,
       totalBookings,
       activeUsers,
-      totalRevenue,
+      totalEarning,
       monthlyRevenue,
       bookingStats,
       recentBookings,
-      activeFlights, // 👈 now added
+      activeFlights,
     },
-  })
-})
+  });
+});
+
 
 // @desc    Get all flights
 // @route   GET /api/admin/flights
@@ -348,9 +346,6 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
 // @route   GET /api/admin/payments
 // @access  Private/Admin
 const getAllPayments = asyncHandler(async (req, res) => {
-  const page = Number.parseInt(req.query.page) || 1
-  const limit = Number.parseInt(req.query.limit) || 10
-  const skip = (page - 1) * limit
 
   const payments = await Payment.find()
     .populate({
@@ -361,20 +356,20 @@ const getAllPayments = asyncHandler(async (req, res) => {
       },
     })
     .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-
   const total = await Payment.countDocuments()
+
+  // Calculate total earning (sum of all payment amounts)
+  const earningResult = await Payment.aggregate([
+    { $group: { _id: null, totalEarning: { $sum: "$amount" } } }
+  ])
+  const totalEarning = earningResult.length > 0 ? earningResult[0].totalEarning : 0
 
   res.status(200).json({
     success: true,
     data: {
       payments,
-      pagination: {
-        current: page,
-        pages: Math.ceil(total / limit),
-        total,
-      },
+      total,
+      totalEarning,
     },
   })
 })

@@ -23,6 +23,7 @@
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
     "axios": "^1.9.0",
+    "dayjs": "^1.11.13",
     "expo": "~53.0.11",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.6",
@@ -38,6 +39,7 @@
     "expo-symbols": "~0.4.5",
     "expo-system-ui": "~5.0.8",
     "expo-web-browser": "~14.1.6",
+    "moment": "^2.30.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hook-form": "^7.57.0",
@@ -56,6 +58,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/moment": "^2.11.29",
     "@types/react": "~19.0.10",
     "@types/react-native": "^0.72.8",
     "eslint": "^9.25.0",

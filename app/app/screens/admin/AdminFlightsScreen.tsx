@@ -1,10 +1,8 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { Ionicons } from "@expo/vector-icons"
-import { StatusBar } from "expo-status-bar"
-import { useEffect, useState } from "react"
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,120 +13,117 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { deleteFlight, getAllFlights } from "../../../api/admin"
-import Card from "../../../components/Card"
-import { COLORS, FONTS, SIZES } from "../../../constants/theme"
-import { useTheme } from "../../../context/ThemeContext"
-import type { Flight, ScreenNavigationProp } from "../../../types"
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { deleteFlight, getAllFlights } from "../../../api/admin";
+import Card from "../../../components/Card";
+import { COLORS, FONTS, SIZES } from "../../../constants/theme";
+import { useTheme } from "../../../context/ThemeContext";
+import type { Flight, ScreenNavigationProp } from "../../../types";
 
 interface AdminFlightsScreenProps {
-  navigation: ScreenNavigationProp<"Admin">
+  navigation: ScreenNavigationProp<"Admin">;
 }
 
 const AdminFlightsScreen: React.FC<AdminFlightsScreenProps> = ({ navigation }) => {
-  const { theme } = useTheme()
-  const [flights, setFlights] = useState<Flight[]>([])
-  const [filteredFlights, setFilteredFlights] = useState<Flight[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterStatus, setFilterStatus] = useState<string | null>(null)
+  const { theme } = useTheme();
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [filteredFlights, setFilteredFlights] = useState<Flight[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFlights()
-  }, [])
+    fetchFlights();
+  }, []);
 
   useEffect(() => {
-    filterFlights()
-  }, [searchQuery, filterStatus, flights])
+    filterFlights();
+  }, [searchQuery, filterStatus, flights]);
 
   const fetchFlights = async () => {
     try {
-      setLoading(true)
-      const flightData = await getAllFlights()
-      if(flightData.success && Array.isArray(flightData.data.flights)) {
-        setFlights(flightData.data.flights)
-        setFilteredFlights(flightData.data.flights)
+      setLoading(true);
+      const flightData = await getAllFlights();
+      if (flightData.success && Array.isArray(flightData.data.flights)) {
+        setFlights(flightData.data.flights);
+        setFilteredFlights(flightData.data.flights);
       }
-      // setFlights(flightData)
-      // setFilteredFlights(flightData)
     } catch (error) {
-      console.error("Error fetching flights:", error)
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to load flights")
+      console.error("Error fetching flights:", error);
+      Alert.alert("Error", error instanceof Error ? error.message : "Failed to load flights");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const filterFlights = () => {
-    let result = [...flights]
+    let result = [...flights];
 
-    // Apply search query filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase()
+      const query = searchQuery.toLowerCase();
       result = result.filter(
         (flight) =>
           flight.flightNumber.toLowerCase().includes(query) ||
           flight.airline.toLowerCase().includes(query) ||
           flight.origin.toLowerCase().includes(query) ||
-          flight.destination.toLowerCase().includes(query),
-      )
+          flight.destination.toLowerCase().includes(query)
+      );
     }
 
-    // Apply status filter
     if (filterStatus) {
-      result = result.filter((flight) => flight.status === filterStatus)
+      result = result.filter((flight) => flight.status.toLowerCase() === filterStatus.toLowerCase());
     }
 
-    setFilteredFlights(result)
-  }
+    setFilteredFlights(result);
+  };
 
   const handleAddFlight = () => {
-    navigation.navigate("AdminFlightForm")
-  }
+    navigation.navigate("AdminFlightForm");
+  };
 
 const handleEditFlight = (flight: Flight) => {
-  navigation.navigate("FlightUpdate", { flight })
+  navigation.navigate("AdminFlightForm", {
+    flight: {
+      ...flight,
+      id: flight._id, // normalize _id to id
+    },
+  })
 }
-
 
   const handleDeleteFlight = async (id: string) => {
     Alert.alert("Delete Flight", "Are you sure you want to delete this flight?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
+      { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
           try {
-            await deleteFlight(id)
-            Alert.alert("Success", "Flight deleted successfully")
-            fetchFlights() // Refresh the list
+            await deleteFlight(id);
+            Alert.alert("Success", "Flight deleted successfully");
+            fetchFlights();
           } catch (error) {
-            Alert.alert("Error", error instanceof Error ? error.message : "Failed to delete flight")
+            Alert.alert("Error", error instanceof Error ? error.message : "Failed to delete flight");
           }
         },
       },
-    ])
-  }
+    ]);
+  };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Scheduled":
-        return theme.primary
-      case "Delayed":
-        return theme.secondary
-      case "Cancelled":
-        return theme.error
-      case "Completed":
-        return theme.success
+    switch (status.toLowerCase()) {
+      case "scheduled":
+        return theme.primary;
+      case "delayed":
+        return theme.secondary;
+      case "cancelled":
+        return theme.error;
+      case "completed":
+        return theme.success;
       default:
-        return theme.gray
+        return theme.gray;
     }
-  }
+  };
 
   const renderFlightItem = ({ item }: { item: Flight }) => (
     <Card style={[styles.flightCard, { backgroundColor: theme.white }]}>
@@ -143,16 +138,9 @@ const handleEditFlight = (flight: Flight) => {
       </View>
 
       <View style={styles.flightRoute}>
-        <View style={styles.routePoint}>
-          <Text style={[styles.routeCity, { color: theme.black }]}>{item.origin}</Text>
-        </View>
-        <View style={styles.routeLine}>
-          <View style={[styles.line, { backgroundColor: theme.lightGray }]} />
-          <Ionicons name="airplane" size={16} color={theme.primary} style={styles.planeIcon} />
-        </View>
-        <View style={styles.routePoint}>
-          <Text style={[styles.routeCity, { color: theme.black }]}>{item.destination}</Text>
-        </View>
+        <Text style={[styles.routeCity, { color: theme.black }]}>{item.origin}</Text>
+        <Ionicons name="airplane" size={16} color={theme.primary} />
+        <Text style={[styles.routeCity, { color: theme.black }]}>{item.destination}</Text>
       </View>
 
       <View style={styles.flightDetails}>
@@ -194,7 +182,7 @@ const handleEditFlight = (flight: Flight) => {
         </TouchableOpacity>
       </View>
     </Card>
-  )
+  );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -227,7 +215,7 @@ const handleEditFlight = (flight: Flight) => {
 
       <View style={styles.filterContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-          {["All", "scheduled", "delayed", "cancelled", "completed"].map((status) => (
+          {["All", "Scheduled", "Delayed", "Cancelled", "Completed"].map((status) => (
             <TouchableOpacity
               key={status}
               style={[
@@ -252,7 +240,7 @@ const handleEditFlight = (flight: Flight) => {
                   },
                 ]}
               >
-                {status === "All" ? "All" : status.charAt(0).toUpperCase() + status.slice(1)}
+                {status}
               </Text>
             </TouchableOpacity>
           ))}
@@ -268,7 +256,7 @@ const handleEditFlight = (flight: Flight) => {
         <FlatList
           data={filteredFlights}
           renderItem={renderFlightItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           contentContainerStyle={styles.flightsList}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
@@ -281,8 +269,9 @@ const handleEditFlight = (flight: Flight) => {
         />
       )}
     </SafeAreaView>
-  )
-}
+  );
+};
+
 
 const styles = StyleSheet.create({
   container: {
@@ -379,8 +368,9 @@ const styles = StyleSheet.create({
   },
   flightRoute: {
     flexDirection: "row",
-    alignItems: "center",
     marginBottom: 16,
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
   },
   routePoint: {
     flex: 1,
