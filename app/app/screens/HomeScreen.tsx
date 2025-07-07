@@ -59,12 +59,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   // Data state
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [popularDestinations, setPopularDestinations] = useState([
-    { city: "New York", country: "USA", code: "NYC", image: "🗽" },
-    { city: "London", country: "UK", code: "LON", image: "🏰" },
-    { city: "Tokyo", country: "Japan", code: "TYO", image: "🗾" },
-    { city: "Paris", country: "France", code: "PAR", image: "🗼" },
-    { city: "Dubai", country: "UAE", code: "DXB", image: "🏜️" },
-    { city: "Sydney", country: "Australia", code: "SYD", image: "🏖️" },
+    { city: "New York", country: "USA", image: "🗽" },
+    { city: "London", country: "UK", image: "🏰" },
+    { city: "Tokyo", country: "Japan", image: "🗾" },
+    { city: "Paris", country: "France", image: "🗼" },
+    { city: "Dubai", country: "UAE", image: "🏜️" },
+    { city: "Sydney", country: "Australia", image: "🏖️" },
   ]);
 
   const [loading, setLoading] = useState(false);
@@ -137,7 +137,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const handleDestinationSelect = (destination: any) => {
-    setTo(destination.code);
+    setTo(destination.city);
   };
 
   const formatDate = (date: Date) => {
@@ -348,8 +348,45 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 </Text>
               </TouchableOpacity>
             )}
-          </View>
+            
+      {/* Date Pickers */}
+      {showDeparturePicker && (
+        <DateTimePicker
+          value={departureDate}
+          mode="date"
+          display="default"
+          minimumDate={new Date()}
+          onChange={(event, selectedDate) => {
+            setShowDeparturePicker(false);
+            if (selectedDate) {
+              setDepartureDate(selectedDate);
+              // Reset return date if it's before departure date
+              if (returnDate && returnDate <= selectedDate) {
+                setReturnDate(null);
+              }
+            }
+          }}
+        />
+      )}
 
+      {showReturnPicker && (
+        <DateTimePicker
+          value={
+            returnDate ||
+            new Date(departureDate.getTime() + 24 * 60 * 60 * 1000)
+          }
+          mode="date"
+          display="default"
+          minimumDate={new Date(departureDate.getTime() + 24 * 60 * 60 * 1000)}
+          onChange={(event, selectedDate) => {
+            setShowReturnPicker(false);
+            if (selectedDate) {
+              setReturnDate(selectedDate);
+            }
+          }}
+        />
+      )}
+          </View>
           {/* Passengers and Class */}
           <View style={styles.optionsContainer}>
             <View style={styles.passengerContainer}>
@@ -403,7 +440,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   onPress={() => setDropdownVisible(false)}
                   activeOpacity={1}
                 >
-                  <View style={styles.dropdown}>
+                  <View style={[styles.dropdown, { backgroundColor: theme.background , borderColor: theme.gray}]}>
                     {["Economy", "Business", "First"].map((item) => (
                       <TouchableOpacity
                         key={item}
@@ -413,7 +450,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                         }}
                         style={styles.dropdownItem}
                       >
-                        <Text style={{ color: theme.black }}>{item}</Text>
+                        <Text style={{ color: theme.gray }}>{item}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -518,43 +555,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         )}
       </ScrollView>
 
-      {/* Date Pickers */}
-      {showDeparturePicker && (
-        <DateTimePicker
-          value={departureDate}
-          mode="date"
-          display="default"
-          minimumDate={new Date()}
-          onChange={(event, selectedDate) => {
-            setShowDeparturePicker(false);
-            if (selectedDate) {
-              setDepartureDate(selectedDate);
-              // Reset return date if it's before departure date
-              if (returnDate && returnDate <= selectedDate) {
-                setReturnDate(null);
-              }
-            }
-          }}
-        />
-      )}
 
-      {showReturnPicker && (
-        <DateTimePicker
-          value={
-            returnDate ||
-            new Date(departureDate.getTime() + 24 * 60 * 60 * 1000)
-          }
-          mode="date"
-          display="default"
-          minimumDate={new Date(departureDate.getTime() + 24 * 60 * 60 * 1000)}
-          onChange={(event, selectedDate) => {
-            setShowReturnPicker(false);
-            if (selectedDate) {
-              setReturnDate(selectedDate);
-            }
-          }}
-        />
-      )}
     </SafeAreaView>
   );
 };
@@ -803,7 +804,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dropdown: {
-    backgroundColor: "white",
     borderRadius: 8,
     padding: 10,
     width: 200,

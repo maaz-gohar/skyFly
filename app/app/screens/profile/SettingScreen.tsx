@@ -39,7 +39,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
     },
   })
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
       {
         text: "Cancel",
@@ -47,13 +47,19 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       },
       {
         text: "Logout",
+        style: "destructive",
         onPress: async () => {
-          await logout()
-          navigation.navigate("Welcome")
+          try {
+            await logout();
+            navigation.navigate("Welcome" as any);
+          } catch (error) {
+            console.error("❌ Logout failed:", error);
+            Alert.alert("Error", "Failed to logout. Please try again.");
+          }
         },
       },
-    ])
-  }
+    ]);
+  };
 
   const handleDeleteAccount = () => {
     Alert.alert("Delete Account", "Are you sure you want to delete your account? This action cannot be undone.", [
@@ -149,12 +155,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
               <Text style={[styles.accountName, { color: theme.black }]}>{user?.name}</Text>
               <Text style={[styles.accountEmail, { color: theme.gray }]}>{user?.email}</Text>
             </View>
-            <TouchableOpacity
-              style={[styles.editAccountButton, { backgroundColor: `${theme.primary}20` }]}
-              onPress={() => navigation.navigate("PersonalInfo")}
-            >
-              <Text style={[styles.editAccountText, { color: theme.primary }]}>Edit</Text>
-            </TouchableOpacity>
           </View>
         </Card>
 

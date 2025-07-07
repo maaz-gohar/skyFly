@@ -175,20 +175,15 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity
+            onPress={() => navigation.navigate("Settings")}
             style={[
               styles.notificationButton,
               { backgroundColor: theme.lightGray },
             ]}
           >
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={theme.black}
-            />
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationCount}>3</Text>
-            </View>
+            <Ionicons name="settings-outline" size={24} color={theme.black} />
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.logoutButton, { backgroundColor: theme.error }]}
             onPress={handleLogout}
@@ -221,7 +216,11 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
               value={stats.totalBookings?.toLocaleString?.() || "0"}
               icon="calendar-outline"
               color={theme.secondary}
-              subtitle={`${Array.isArray(stats.recentBookings) ? stats.recentBookings.length : stats.recentBookings || 0} this week`}
+              subtitle={`${
+                Array.isArray(stats.recentBookings)
+                  ? stats.recentBookings.length
+                  : stats.recentBookings || 0
+              } this week`}
             />
 
             <StatCard

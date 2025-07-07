@@ -179,7 +179,7 @@ const [formData, setFormData] = useState({
               placeholder="e.g., New York (JFK)"
               value={formData.origin}
               onChangeText={(value) => handleInputChange("origin", value)}
-              style={{ flex: 1, marginRight: 8 }}
+              style={{ flex: 1, marginRight: 8, color: theme.gray }}
               icon="location-outline"
             />
             <Input
@@ -187,7 +187,7 @@ const [formData, setFormData] = useState({
               placeholder="e.g., London (LHR)"
               value={formData.destination}
               onChangeText={(value) => handleInputChange("destination", value)}
-              style={{ flex: 1, marginLeft: 8 }}
+              style={styles.rowInput}
               icon="location-outline"
             />
           </View>
@@ -198,7 +198,7 @@ const [formData, setFormData] = useState({
               placeholder="YYYY-MM-DD HH:MM"
               value={formData.departureTime}
               onChangeText={(value) => handleInputChange("departureTime", value)}
-              style={{ flex: 1, marginRight: 8 }}
+              style={styles.rowInput}
               icon="time-outline"
             />
             <Input
@@ -206,7 +206,7 @@ const [formData, setFormData] = useState({
               placeholder="YYYY-MM-DD HH:MM"
               value={formData.arrivalTime}
               onChangeText={(value) => handleInputChange("arrivalTime", value)}
-              style={{ flex: 1, marginLeft: 8 }}
+              style={styles.rowInput}
               icon="time-outline"
             />
           </View>
@@ -217,7 +217,7 @@ const [formData, setFormData] = useState({
               placeholder="e.g., 299"
               value={formData.price}
               onChangeText={(value) => handleInputChange("price", value)}
-              style={{ flex: 1, marginRight: 8 }}
+              style={styles.rowInput}
               icon="card-outline"
               keyboardType="numeric"
             />
@@ -226,7 +226,7 @@ const [formData, setFormData] = useState({
               placeholder="e.g., 150"
               value={formData.availableSeats}
               onChangeText={(value) => handleInputChange("availableSeats", value)}
-              style={{ flex: 1, marginLeft: 8 }}
+              style={styles.rowInput}
               icon="people-outline"
               keyboardType="numeric"
             />
@@ -247,7 +247,7 @@ const [formData, setFormData] = useState({
               placeholder="e.g., 0"
               value={formData.stops}
               onChangeText={(value) => handleInputChange("stops", value)}
-              style={{ flex: 1, marginLeft: 8 }}
+              style={styles.rowInput}
               icon="git-branch-outline"
               keyboardType="numeric"
             />
@@ -325,6 +325,9 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     marginTop: 16,
+  },
+  rowInput: {
+    flex: 1, marginRight: 8, color: COLORS.gray 
   },
   rowContainer: {
     flexDirection: "row",

@@ -63,9 +63,9 @@ const HelpSupportScreen: React.FC<HelpSupportScreenProps> = ({ navigation }) => 
     {
       id: "1",
       title: "Call Us",
-      subtitle: "+1 (555) 123-4567",
+      subtitle: "+92 309 2457886",
       icon: "call-outline",
-      action: () => Linking.openURL("tel:+15551234567"),
+      action: () => Linking.openURL("tel:+923092457886"),
     },
     {
       id: "2",
@@ -84,9 +84,9 @@ const HelpSupportScreen: React.FC<HelpSupportScreenProps> = ({ navigation }) => 
     {
       id: "4",
       title: "WhatsApp",
-      subtitle: "+1 (555) 987-6543",
+      subtitle: "+92 309 2457886",
       icon: "logo-whatsapp",
-      action: () => Linking.openURL("https://wa.me/15559876543"),
+      action: () => Linking.openURL("https://wa.me/+923092457886"),
     },
   ]
 
@@ -144,7 +144,7 @@ const HelpSupportScreen: React.FC<HelpSupportScreenProps> = ({ navigation }) => 
 
         <View style={styles.messageContainer}>
           <Text style={[styles.messageLabel, { color: theme.black }]}>Message</Text>
-          <View style={[styles.messageInputContainer, { borderColor: theme.lightGray, backgroundColor: theme.white }]}>
+          <View style={[{ borderColor: theme.lightGray, backgroundColor: theme.white }]}>
             <Input
               placeholder="Enter your message"
               value={contactForm.message}
@@ -152,6 +152,7 @@ const HelpSupportScreen: React.FC<HelpSupportScreenProps> = ({ navigation }) => 
               multiline
               numberOfLines={4}
               style={styles.messageInput}
+              icon="chatbubble-outline"
             />
           </View>
         </View>
@@ -344,11 +345,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.medium,
     fontSize: SIZES.small,
     marginBottom: 8,
-  },
-  messageInputContainer: {
-    borderWidth: 1,
-    borderRadius: 12,
-    minHeight: 100,
   },
   messageInput: {
     marginBottom: 0,

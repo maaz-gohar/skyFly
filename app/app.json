@@ -57,7 +57,8 @@
           "image": "./assets/images/plane1.png",
           "backgroundColor": "#4A6FFF"
         }
-      ]
+      ],
+      "expo-facebook"
     ],
     "experiments": {
       "typedRoutes": true

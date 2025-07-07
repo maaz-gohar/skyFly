@@ -60,14 +60,23 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     loadStoredData();
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
       {
         text: "Logout",
+        style: "destructive",
         onPress: async () => {
-          await logout();
-          navigation.navigate("Welcome");
+          try {
+            await logout();
+            navigation.navigate("Welcome" as any);
+          } catch (error) {
+            console.error("❌ Logout failed:", error);
+            Alert.alert("Error", "Failed to logout. Please try again.");
+          }
         },
       },
     ]);
