@@ -58,7 +58,9 @@
           "backgroundColor": "#4A6FFF"
         }
       ],
-      "expo-facebook"
+      "expo-facebook",
+      "expo-web-browser",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

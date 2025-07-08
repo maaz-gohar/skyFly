@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import type { Booking } from "../types"
+import type { Booking, PassengerDetails } from "../types"
 import { apiRequest } from "./config"
 
 // Get user bookings
@@ -25,10 +25,16 @@ export const getUserBookings = async (): Promise<Booking[]> => {
     }
 
     const bookingsData = Array.isArray(response.data) ? response.data : [response.data]
-    console.log("📋 Processing bookings data:", bookingsData)
 
     const transformedBookings: Booking[] = bookingsData.map((booking: any) => {
-      console.log("🔄 Transforming booking:", booking)
+      const passengers: PassengerDetails[] = Array.isArray(booking.passengers)
+        ? booking.passengers.map((p: any) => ({
+            name: p.name || "",
+            age: Number(p.age) || 0,
+            gender: p.gender || "Other",
+            seatNumber: p.seatNumber || "",
+          }))
+        : []
 
       return {
         id: booking._id || booking.id,
@@ -53,8 +59,9 @@ export const getUserBookings = async (): Promise<Booking[]> => {
           availableSeats: booking.flightId?.availableSeats || booking.flight?.availableSeats || 0,
           totalSeats: booking.flightId?.totalSeats || booking.flight?.totalSeats || 180,
           class: booking.flightId?.class || booking.flight?.class || "Economy",
+          status: booking.flightId?.status || booking.flight?.status || "Scheduled",
         },
-        passengers: Number(booking.passengers) || 1,
+        passengers,
         totalAmount: booking.totalAmount || 0,
         status: booking.status || "Pending",
         bookingDate: booking.bookingDate || booking.createdAt || new Date().toISOString(),
@@ -77,12 +84,12 @@ export const getUserBookings = async (): Promise<Booking[]> => {
 // Create new booking
 export const createBooking = async (bookingData: {
   flightId: string
-  // passengers: {
-  //   name: string
-  //   age: number
-  //   gender: "Male" | "Female" | "Other"
-  // }[]
-  passengers: number
+  passengers: {
+    name: string
+    age: number
+    gender: "Male" | "Female" | "Other"
+  }[]
+  // passengers: number
   contactEmail: string
   contactPhone: string
 }) => {

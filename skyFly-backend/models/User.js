@@ -55,6 +55,15 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    provider: {
+      type: String,
+      enum: ["local", "google", "facebook"],
+      default: "local",
+    },
+    providerId: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

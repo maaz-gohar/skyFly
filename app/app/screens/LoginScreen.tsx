@@ -1,13 +1,14 @@
 "use client"
 
-import type React from "react"
-
 import { Ionicons } from "@expo/vector-icons"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
 import { StatusBar } from "expo-status-bar"
+import type React from "react"
 import { useState } from "react"
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
+
 import Button from "../../components/Button"
 import Input from "../../components/Input"
 import { COLORS, FONTS, SIZES } from "../../constants/theme"
@@ -24,38 +25,42 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const { login , user} = useAuth()
+  const { login } = useAuth()
   const { theme } = useTheme()
-  const router  = useRouter();
+  const router = useRouter()
 
-const handleLogin = async () => {
-  if (!email || !password) {
-    Alert.alert("Error", "Please enter both email and password")
-    return
-  }
-
-  setLoading(true)
-  try {
-    // ✅ Get the user object directly from login()
-    const loggedInUser = await login(email, password)
-
-    // ✅ Navigate based on returned user's role
-    if (loggedInUser?.role === "admin") {
-      navigation.navigate("Admin")
-    } else {
-      navigation.navigate("Main")
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter both email and password")
+      return
     }
 
-  } catch (error) {
-    Alert.alert(
-      "Login Failed",
-      error instanceof Error ? error.message : "Please check your credentials"
-    )
-  } finally {
-    setLoading(false)
-  }
-}
+    setLoading(true)
+    try {
+      // Login returns { user, token }
+      const response = await login(email, password)
 
+      if (!response?.token) throw new Error("Token missing from response")
+
+      // ✅ Save token to AsyncStorage
+      await AsyncStorage.setItem("authToken", response.token)
+
+      // ✅ Navigate based on user role
+      if (response.user.role === "admin") {
+        navigation.navigate("Admin")
+      } else {
+        navigation.navigate("Main")
+      }
+
+    } catch (error) {
+      Alert.alert(
+        "Login Failed",
+        error instanceof Error ? error.message : "Please check your credentials"
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

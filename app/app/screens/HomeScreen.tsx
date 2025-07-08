@@ -170,7 +170,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               backgroundColor:
                 booking.status === "Confirmed"
                   ? theme.success + "20"
-                  : theme.secondary + "20",
+                  : theme.primary + "20",
             },
           ]}
         >
@@ -181,7 +181,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 color:
                   booking.status === "Confirmed"
                     ? theme.success
-                    : theme.secondary,
+                    : theme.primary,
               },
             ]}
           >

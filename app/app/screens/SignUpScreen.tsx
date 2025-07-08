@@ -42,6 +42,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
 
   const { signup } = useAuth();
   const { theme } = useTheme();
+  
 
   const handleSignUp = async () => {
     if (

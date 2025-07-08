@@ -115,7 +115,7 @@ export interface Booking {
   _id?: string
   userId: string
   flight: Flight
-  passengers:number
+  passengers: PassengerDetails[]
   totalAmount: number
   status: "Pending" | "Confirmed" | "Cancelled" | "Completed"
   bookingDate: string
@@ -139,7 +139,7 @@ export interface AdminBooking {
     origin: string
     destination: string
   }
-  passengers:number
+  passengers: PassengerDetails[]
   totalAmount: number
   status: "Pending" | "Confirmed" | "Cancelled" | "Completed"
   bookingDate: string
@@ -150,13 +150,10 @@ export interface AdminBooking {
 }
 
 export interface PassengerDetails {
-  firstName: string
-  lastName: string
-  dob: string
-  gender: string
-  nationality: string
-  email: string
-  phone: string
+  name: string
+  age: number
+  gender: "Male" | "Female" | "Other"
+  seatNumber?: string
 }
 
 // Payment Types

@@ -10,6 +10,6 @@ router.get("/:id", protect, bookingController.getBooking)
 router.put("/:id/cancel", protect, bookingController.cancelBooking)
 
 // Payment routes related to bookings
-router.get("/:id/payments", paymentController.getBookingPayments)
+router.get("/:id/payments", protect, paymentController.getBookingPayments)
 
 module.exports = router

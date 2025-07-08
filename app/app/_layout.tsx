@@ -1,4 +1,6 @@
-"use client"
+"use client";
+
+import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
 
 import {
   Poppins_400Regular,
@@ -6,125 +8,124 @@ import {
   Poppins_600SemiBold,
   Poppins_700Bold,
   useFonts,
-} from "@expo-google-fonts/poppins"
-import { Ionicons } from "@expo/vector-icons"
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import { createStackNavigator } from "@react-navigation/stack"
-import * as SplashScreen from "expo-splash-screen"
-import { StatusBar } from "expo-status-bar"
-import React, { useCallback } from "react"
-import { StyleSheet, View } from "react-native"
-import { SafeAreaProvider } from "react-native-safe-area-context"
+} from "@expo-google-fonts/poppins";
+import { Ionicons } from "@expo/vector-icons";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import React, { useCallback } from "react";
+import { StyleSheet, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-// Import providers
-import { AuthProvider } from "../context/AuthContext"
-import { ThemeProvider, useTheme } from "../context/ThemeContext"
+// Contexts
+import { AuthProvider } from "../context/AuthContext";
+import { ThemeProvider, useTheme } from "../context/ThemeContext";
 
-// Import screens
-import FlightDetailsScreen from "./screens/FlightDetailsScreen"
-import FlightResultsScreen from "./screens/FlightResultsScreen"
-import HomeScreen from "./screens/HomeScreen"
-import LoginScreen from "./screens/LoginScreen"
-import MyBookingsScreen from "./screens/MyBookingsScreen"
-import PaymentScreen from "./screens/PaymentScreen"
-import ProfileScreen from "./screens/ProfileScreen"
-import SignUpScreen from "./screens/SignUpScreen"
-import WelcomeScreen from "./screens/WelcomeScreen"
-
-// Profile Screens
-import AboutScreen from "./screens/profile/AboutScreen"
-import FrequentFlyerScreen from "./screens/profile/FrequentFlyerScreen"
-import HelpSupportScreen from "./screens/profile/HelpSupportScreen"
-import PaymentMethodsScreen from "./screens/profile/PaymentMethodsScreen"
-import PersonalInfoScreen from "./screens/profile/PersonalInfoScreen"
-import SettingsScreen from "./screens/profile/SettingScreen"
-import TravelPreferencesScreen from "./screens/profile/TravelPreferencesScreen"
+// Screens
+import FlightDetailsScreen from "./screens/FlightDetailsScreen";
+import FlightResultsScreen from "./screens/FlightResultsScreen";
+import HomeScreen from "./screens/HomeScreen";
+import LoginScreen from "./screens/LoginScreen";
+import MyBookingsScreen from "./screens/MyBookingsScreen";
+import PaymentScreen from "./screens/PaymentScreen";
+import AboutScreen from "./screens/profile/AboutScreen";
+import FrequentFlyerScreen from "./screens/profile/FrequentFlyerScreen";
+import HelpSupportScreen from "./screens/profile/HelpSupportScreen";
+import PaymentMethodsScreen from "./screens/profile/PaymentMethodsScreen";
+import PersonalInfoScreen from "./screens/profile/PersonalInfoScreen";
+import SettingsScreen from "./screens/profile/SettingScreen";
+import TravelPreferencesScreen from "./screens/profile/TravelPreferencesScreen";
+import ProfileScreen from "./screens/ProfileScreen";
+import SignUpScreen from "./screens/SignUpScreen";
+import Splash from "./screens/SplashScreen";
+import WelcomeScreen from "./screens/WelcomeScreen";
 
 // Admin Screens
-import AdminBookingsScreen from "./screens/admin/AdminBookingsScreen"
-import AdminDashboardScreen from "./screens/admin/AdminDashboardScreen"
-import AdminFlightFormScreen from "./screens/admin/AdminFlightFormScreen"
-import AdminFlightsScreen from "./screens/admin/AdminFlightsScreen"
-import AdminPaymentsScreen from "./screens/admin/AdminPaymentsScreen"
-import AdminUsersScreen from "./screens/admin/AdminUsersScreen"
-
-// Splash
-import Splash from "./screens/SplashScreen"
+import AdminBookingsScreen from "./screens/admin/AdminBookingsScreen";
+import AdminDashboardScreen from "./screens/admin/AdminDashboardScreen";
+import AdminFlightFormScreen from "./screens/admin/AdminFlightFormScreen";
+import AdminFlightsScreen from "./screens/admin/AdminFlightsScreen";
+import AdminPaymentsScreen from "./screens/admin/AdminPaymentsScreen";
+import AdminUsersScreen from "./screens/admin/AdminUsersScreen";
+import FlightUpdateScreen from "./screens/admin/FlightUpdateScreen";
 
 // Theme
-import { COLORS } from "../constants/theme"
-import FlightUpdateScreen from "./screens/admin/FlightUpdateScreen"
+import { COLORS } from "../constants/theme";
+import createTokenCache from "../utils/cache";
 
-// Navigation Types
+// Types
 export type RootStackParamList = {
-  Splash: undefined
-  Welcome: undefined
-  Login: undefined
-  SignUp: undefined
-  Main: undefined
-  Admin: undefined
+  Splash: undefined;
+  Welcome: undefined;
+  Login: undefined;
+  SignUp: undefined;
+  Main: undefined;
+  Admin: undefined;
   FlightResults: {
-    flights?: any[]
+    flights?: any[];
     searchParams: {
-      from: string
-      to: string
-      departureDate: string
-      returnDate?: string
-      passengers: number
-      class: string
-    }
-  }
+      from: string;
+      to: string;
+      departureDate: string;
+      returnDate?: string;
+      passengers: number;
+      class: string;
+    };
+  };
   FlightDetails: {
-    flight: any
-    booking?: any
-    searchParams?: any
-  }
-  Payment: { flight: any; passengerDetails?: any }
-  PersonalInfo: undefined
-  PaymentMethods: undefined
-  TravelPreferences: undefined
-  FrequentFlyer: undefined
-  HelpSupport: undefined
-  About: undefined
-  Settings: undefined
-  MyBookings: undefined
-  AdminFlightForm: undefined
-  UpdateForm: { flight: any }
-}
+    flight: any;
+    booking?: any;
+    searchParams?: any;
+  };
+  Payment: { flight: any; passengerDetails?: any };
+  PersonalInfo: undefined;
+  PaymentMethods: undefined;
+  TravelPreferences: undefined;
+  FrequentFlyer: undefined;
+  HelpSupport: undefined;
+  About: undefined;
+  Settings: undefined;
+  MyBookings: undefined;
+  AdminFlightForm: undefined;
+  UpdateForm: { flight: any };
+};
 
 export type TabParamList = {
-  Home: undefined
-  MyBookings: undefined
-  Profile: undefined
-}
+  Home: undefined;
+  MyBookings: undefined;
+  Profile: undefined;
+};
 
 export type AdminTabParamList = {
-  Dashboard: undefined
-  Flights: undefined
-  Bookings: undefined
-  Users: undefined
-  Payments: undefined
-}
-
-const Stack = createStackNavigator<RootStackParamList>()
-const Tab = createBottomTabNavigator<TabParamList>()
-const AdminTab = createBottomTabNavigator<AdminTabParamList>()
+  Dashboard: undefined;
+  Flights: undefined;
+  Bookings: undefined;
+  Users: undefined;
+  Payments: undefined;
+};
 
 // Prevent splash from auto hiding
-SplashScreen.preventAutoHideAsync()
+SplashScreen.preventAutoHideAsync();
+
+// Tab Navigators
+const Stack = createStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
+const AdminTab = createBottomTabNavigator<AdminTabParamList>();
 
 function MainTabs() {
-  const { theme } = useTheme()
+  const { theme } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = "home"
-          if (route.name === "Home") iconName = focused ? "home" : "home-outline"
-          else if (route.name === "MyBookings") iconName = focused ? "calendar" : "calendar-outline"
-          else if (route.name === "Profile") iconName = focused ? "person" : "person-outline"
+          let iconName: keyof typeof Ionicons.glyphMap = "home";
 
-          return <Ionicons name={iconName} size={size} color={color} />
+          if (route.name === "Home") iconName = focused ? "home" : "home-outline";
+          else if (route.name === "MyBookings") iconName = focused ? "calendar" : "calendar-outline";
+          else if (route.name === "Profile") iconName = focused ? "person" : "person-outline";
+
+          return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.gray,
@@ -143,23 +144,24 @@ function MainTabs() {
       <Tab.Screen name="MyBookings" component={MyBookingsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
-  )
+  );
 }
 
 function AdminTabs() {
-  const { theme } = useTheme()
+  const { theme } = useTheme();
   return (
     <AdminTab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = "home"
-          if (route.name === "Dashboard") iconName = focused ? "grid" : "grid-outline"
-          else if (route.name === "Flights") iconName = focused ? "airplane" : "airplane-outline"
-          else if (route.name === "Bookings") iconName = focused ? "calendar" : "calendar-outline"
-          else if (route.name === "Users") iconName = focused ? "people" : "people-outline"
-          else if (route.name === "Payments") iconName = focused ? "card" : "card-outline"
+          let iconName: keyof typeof Ionicons.glyphMap = "home";
 
-          return <Ionicons name={iconName} size={size} color={color} />
+          if (route.name === "Dashboard") iconName = focused ? "grid" : "grid-outline";
+          else if (route.name === "Flights") iconName = focused ? "airplane" : "airplane-outline";
+          else if (route.name === "Bookings") iconName = focused ? "calendar" : "calendar-outline";
+          else if (route.name === "Users") iconName = focused ? "people" : "people-outline";
+          else if (route.name === "Payments") iconName = focused ? "card" : "card-outline";
+
+          return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.gray,
@@ -180,7 +182,7 @@ function AdminTabs() {
       <AdminTab.Screen name="Users" component={AdminUsersScreen} />
       <AdminTab.Screen name="Payments" component={AdminPaymentsScreen} />
     </AdminTab.Navigator>
-  )
+  );
 }
 
 function RootStack() {
@@ -206,7 +208,7 @@ function RootStack() {
       <Stack.Screen name="AdminFlightForm" component={AdminFlightFormScreen} />
       <Stack.Screen name="UpdateForm" component={FlightUpdateScreen} />
     </Stack.Navigator>
-  )
+  );
 }
 
 export default function Layout() {
@@ -215,39 +217,53 @@ export default function Layout() {
     Poppins_500Medium,
     Poppins_600SemiBold,
     Poppins_700Bold,
-  })
+  });
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
-      await SplashScreen.hideAsync()
+      await SplashScreen.hideAsync();
     }
-  }, [fontsLoaded])
+  }, [fontsLoaded]);
 
-  if (!fontsLoaded) return null
+  if (!fontsLoaded) return null;
+
+  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (!publishableKey) {
+    console.error("Clerk publishable key is not set in .env file");
+    return null;
+  }
+
+
+const tokenCache = createTokenCache();
 
   return (
-    <SafeAreaProvider onLayout={onLayoutRootView}>
-      <AuthProvider>
-        <ThemeProvider>
-          <ThemedApp />
-        </ThemeProvider>
-      </AuthProvider>
-    </SafeAreaProvider>
-  )
+    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <ClerkLoaded>
+        <SafeAreaProvider onLayout={onLayoutRootView}>
+          <AuthProvider>
+            <ThemeProvider>
+              <ThemedApp />
+            </ThemeProvider>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </ClerkLoaded>
+    </ClerkProvider>
+  );
 }
 
 function ThemedApp() {
-  const { theme } = useTheme()
+  const { theme } = useTheme();
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar style="auto" />
       <RootStack />
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-})
+});
